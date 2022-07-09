@@ -1,0 +1,13 @@
+plugins {
+    id 'java'
+}
+
+group 'net.deechael'
+version '1.00.0'
+
+java.sourceCompatibility(JavaVersion.VERSION_17)
+java.targetCompatibility(JavaVersion.VERSION_17)
+
+repositories {
+    mavenCentral()
+}

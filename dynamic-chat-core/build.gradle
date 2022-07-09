@@ -1,0 +1,26 @@
+plugins {
+    id 'java'
+    id "com.github.johnrengelman.shadow" version "7.1.2"
+}
+
+group 'net.deechael'
+version '1.00.0'
+
+repositories {
+    mavenCentral()
+    maven {
+        url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"
+    }
+    maven {
+        url = "https://libraries.minecraft.net"
+    }
+}
+
+dependencies {
+    compileOnly 'org.spigotmc:spigot-api:1.19-R0.1-SNAPSHOT'
+    compileOnly 'com.mojang:brigadier:1.0.18'
+    compileOnly 'com.mojang:authlib:1.5.25'
+    implementation project(":dynamic-chat-api")
+    implementation "net.deechael:Useless:1.02.0"
+    implementation "net.deechael:ref:1.01.0"
+}

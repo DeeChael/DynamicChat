@@ -3,3 +3,4 @@ main: net.deechael.dynamichat.DyChatPlugin
 author: DeeChael
 version: 1.00.0
 api-version: 1.19
+depend: [PlaceholderAPI, DCG]

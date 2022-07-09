@@ -40,7 +40,8 @@ public final class NMSCommandKiller {
     }
 
     private static void removeCommand(RootCommandNode<Object> root, String command) {
-        RefInvoker rootInvoker = RefInvoker.ref(root);
+        RefInvoker rootInvoker = RefInvoker.ref(CommandNode.class);
+        RefInvoker.ref(rootInvoker).setField("instance", root);
         ((Map<?, ?>) rootInvoker.getField("children")).remove(command);
         ((Map<?, ?>) rootInvoker.getField("literals")).remove(command);
         ((Map<?, ?>) rootInvoker.getField("arguments")).remove(command);
@@ -131,10 +132,7 @@ public final class NMSCommandKiller {
     }
 
     private static Object getBukkitCommandDispatcher() {
-        if (Ref.getVersion() == 17) {
-            return Ref.invoke(getMinecraftServer(), Objects.requireNonNull(Ref.getMethod(Ref.getNmsOrOld("server.MinecraftServer", "MinecraftServer"), "aC")));
-        }
-        return Ref.invoke(getMinecraftServer(), Objects.requireNonNull(Ref.getMethod(Ref.getNmsOrOld("server.MinecraftServer", "MinecraftServer"), "getCommandDispatcher")));
+        return Ref.invoke(getMinecraftServer(), Objects.requireNonNull(Ref.getMethod(Ref.getNmsOrOld("server.MinecraftServer", "MinecraftServer"), "aC")));
     }
 
     private static Object getMinecraftCommandDispatcher() {
@@ -174,10 +172,7 @@ public final class NMSCommandKiller {
     }
 
     private static boolean permissionCheck(Object commandListenerWrapper, int level) {
-        if (Ref.getVersion() == 17) {
-            return (boolean) Ref.invoke(commandListenerWrapper, Objects.requireNonNull(Ref.getMethod(Ref.getNmsOrOld("commands.CommandListenerWrapper", "CommandListenerWrapper"), "c", int.class)), level);
-        }
-        return (boolean) Ref.invoke(commandListenerWrapper, Objects.requireNonNull(Ref.getMethod(Ref.getNmsOrOld("commands.CommandListenerWrapper", "CommandListenerWrapper"), "hasPermission", int.class)), level);
+        return (boolean) Ref.invoke(commandListenerWrapper, Objects.requireNonNull(Ref.getMethod(Ref.getNmsOrOld("commands.CommandListenerWrapper", "CommandListenerWrapper"), "c", int.class)), level);
     }
 
 

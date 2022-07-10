@@ -22,5 +22,5 @@ dependencies {
     compileOnly 'com.mojang:authlib:1.5.25'
     implementation project(":dynamic-chat-api")
     implementation "net.deechael:Useless:1.02.0"
-    implementation "net.deechael:ref:1.01.0"
+    compileOnly "net.deechael:ref:1.01.0"
 }

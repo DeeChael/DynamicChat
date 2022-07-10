@@ -3,11 +3,9 @@ package net.deechael.dynamichat.gui;
 import net.deechael.dcg.*;
 import net.deechael.dcg.generator.JGenerator;
 import net.deechael.dcg.items.Var;
-import net.deechael.dynamichat.gui.items.Clicker;
-import net.deechael.dynamichat.gui.items.Image;
-import net.deechael.dynamichat.gui.items.Slot;
 import net.deechael.dynamichat.util.Ref;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -20,10 +18,12 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -52,11 +52,18 @@ public final class AnvilGUI implements Listener {
 
     private boolean dropped = false;
 
+    private final String title;
+
     public AnvilGUI(Plugin plugin) {
+        this(plugin, "Anvil");
+    }
+
+    public AnvilGUI(Plugin plugin, String title) {
         if (anvilClass == null) {
             anvilClass = generateAnvilClass();
         }
         this.plugin = plugin;
+        this.title = title;
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
@@ -100,7 +107,7 @@ public final class AnvilGUI implements Listener {
                     inventory.setItem(i, ((Image) input).draw(player));
                 }
             }
-            anvil.open(player);
+            anvil.open(title);
             cache.put(player, inventory);
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
@@ -138,9 +145,30 @@ public final class AnvilGUI implements Listener {
                     }
                     if (event.getRawSlot() >= 0 && event.getRawSlot() <= 2) {
                         if (inputs.containsKey(event.getRawSlot())) {
+                            event.setCancelled(true);
                             Slot input = inputs.get(event.getRawSlot());
                             if (input instanceof Clicker) {
                                 ((Clicker) input).click(player, event.getClick(), event.getAction());
+                            } else if (input instanceof Storage) {
+                                Storage storage = (Storage) input;
+                                ItemStack cursor = event.getCursor();
+                                if (cursor == null)
+                                    cursor = new ItemStack(Material.AIR);
+                                ItemStack storageItem = storage.getStored(player);
+                                if (cursor.getType() == Material.AIR) {
+                                    storage.setStored(player, null);
+                                    player.setItemOnCursor(storageItem);
+                                    event.getClickedInventory().setItem(event.getRawSlot(), null);
+                                } else {
+                                    if (storage.isAllow(player, cursor)) {
+                                        storage.setStored(player, cursor);
+                                        player.setItemOnCursor(storageItem);
+                                        event.getClickedInventory().setItem(event.getRawSlot(), cursor);
+                                    } else {
+                                        player.setItemOnCursor(cursor);
+                                        event.getClickedInventory().setItem(event.getRawSlot(), storageItem);
+                                    }
+                                }
                             }
                         }
                     }
@@ -185,7 +213,11 @@ public final class AnvilGUI implements Listener {
         anvil.importClass(Ref.getNmsOrOld("world.level.World", "World"));
         anvil.importClass(Ref.getNmsOrOld("world.entity.player.EntityHuman", "EntityHuman"));
         anvil.importClass(Ref.getNmsOrOld("core.BlockPosition", "BlockPosition"));
-        anvil.importClass(Ref.getNmsOrOld("network.chat.contents.LiteralContents", "ChatMessage"));
+        if (Ref.getVersion() >= 19) {
+            anvil.importClass(Ref.getNmsOrOld("network.chat.IChatBaseComponent", ""));
+        } else {
+            anvil.importClass(Ref.getNmsOrOld("network.chat.ChatMessage", "ChatMessage"));
+        }
         anvil.importClass(Ref.getObcClass("entity.CraftPlayer"));
         anvil.importClass(Player.class);
         anvil.importClass(Inventory.class);
@@ -213,7 +245,9 @@ public final class AnvilGUI implements Listener {
             Var entityPlayer = Var.invokeMethod(craftPlayer, "getHandle");
             Var nextContainerCounter = Var.invokeMethod(entityPlayer, "nextContainerCounter");
             Var inventory;
-            if (Ref.getVersion() == 18) {
+            if (Ref.getVersion() >= 19) {
+                inventory = Var.invokeMethod(entityPlayer, "fB");
+            } else if (Ref.getVersion() == 18) {
                 inventory = Var.invokeMethod(entityPlayer, "fr");
             } else if (Ref.getVersion() == 17) {
                  inventory = Var.invokeMethod(entityPlayer, "fq");
@@ -278,14 +312,21 @@ public final class AnvilGUI implements Listener {
 
         JMethod openToPlayer = anvil.addMethod(Level.PUBLIC, "open", false, false, false);
 
+        Var titleString = openToPlayer.addParameter(JType.STRING, "title");
         Var packet;
         JType packetClass = JType.classType(Ref.getNmsOrOld("network.protocol.game.PacketPlayOutOpenWindow", "PacketPlayOutOpenWindow"));
-        if (Ref.getVersion() >= 16) {
-            packet = openToPlayer.createVar(packetClass, "packet", Var.constructor(packetClass, Var.invokeThisMethod("getWindowId"), Var.staticField(Ref.getNmsOrOld("world.inventory.Containers", "Containers"), "h"), Var.constructor(JType.classType(Ref.getNmsOrOld("network.chat.contents.LiteralContents", "ChatMessage")), JStringVar.stringVar("Testing"))));
-        } else if (Ref.getVersion() <= 10) {
-            packet = openToPlayer.createVar(packetClass, "packet", Var.constructor(packetClass, Var.invokeThisMethod("getWindowId"), JStringVar.stringVar("minecraft:anvil"), Var.constructor(JType.classType(Ref.getNmsOrOld("network.chat.contents.LiteralContents", "ChatMessage")), JStringVar.stringVar("Testing"))));
+        Var title;
+        if (Ref.getVersion() >= 19) {
+            title = Var.invokeMethod(JType.classType(Ref.getNmsOrOld("network.chat.IChatBaseComponent", "")), "b", titleString);
         } else {
-            packet = openToPlayer.createVar(packetClass, "packet", Var.constructor(packetClass, Var.invokeThisMethod("getWindowId"), Var.staticField(Ref.getNmsOrOld("world.inventory.Containers", "Containers"), "ANVIL"), Var.constructor(JType.classType(Ref.getNmsOrOld("network.chat.contents.LiteralContents", "ChatMessage")), JStringVar.stringVar("Testing"))));
+            title = Var.constructor(JType.classType(Ref.getNmsOrOld("network.chat.ChatMessage", "ChatMessage")), titleString);
+        }
+        if (Ref.getVersion() >= 16) {
+            packet = openToPlayer.createVar(packetClass, "packet", Var.constructor(packetClass, Var.invokeThisMethod("getWindowId"), Var.staticField(Ref.getNmsOrOld("world.inventory.Containers", "Containers"), "h"), title));
+        } else if (Ref.getVersion() <= 10) {
+            packet = openToPlayer.createVar(packetClass, "packet", Var.constructor(packetClass, Var.invokeThisMethod("getWindowId"), JStringVar.stringVar("minecraft:anvil"), title));
+        } else {
+            packet = openToPlayer.createVar(packetClass, "packet", Var.constructor(packetClass, Var.invokeThisMethod("getWindowId"), Var.staticField(Ref.getNmsOrOld("world.inventory.Containers", "Containers"), "ANVIL"), title));
         }
 
         String playerConnectionName;
@@ -318,7 +359,6 @@ public final class AnvilGUI implements Listener {
             openToPlayer.invokeThisMethod("addSlotListener", entityPlayer);
         }
         try {
-            System.out.println(anvil.getString());
             return JGenerator.generate(anvil);
         } catch (URISyntaxException e) {
             throw new RuntimeException("Failed to create anvil gui!");

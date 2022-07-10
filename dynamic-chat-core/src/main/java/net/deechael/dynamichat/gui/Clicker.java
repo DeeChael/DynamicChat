@@ -1,4 +1,4 @@
-package net.deechael.dynamichat.gui.items;
+package net.deechael.dynamichat.gui;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;

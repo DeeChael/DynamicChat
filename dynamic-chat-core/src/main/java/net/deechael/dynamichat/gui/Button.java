@@ -1,4 +1,4 @@
-package net.deechael.dynamichat.gui.items;
+package net.deechael.dynamichat.gui;
 
 public interface Button extends Clicker, Image {
 }

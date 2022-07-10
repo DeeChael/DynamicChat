@@ -5,7 +5,7 @@ import org.bukkit.inventory.Inventory;
 
 public interface AnvilInterface {
 
-    void open(Player player);
+    void open(String title);
 
     Inventory castToBukkit();
 

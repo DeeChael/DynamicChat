@@ -14,6 +14,9 @@ repositories {
     maven {
         url = "https://libraries.minecraft.net"
     }
+    maven {
+        url = "https://repo.extendedclip.com/content/repositories/placeholderapi/"
+    }
 }
 
 dependencies {
@@ -22,5 +25,7 @@ dependencies {
     compileOnly 'com.mojang:authlib:1.5.25'
     implementation project(":dynamic-chat-api")
     implementation "net.deechael:Useless:1.02.0"
+    implementation "net.deechael:chschar:1.00.0"
     compileOnly "net.deechael:ref:1.01.0"
+    compileOnly 'me.clip:placeholderapi:2.11.2'
 }

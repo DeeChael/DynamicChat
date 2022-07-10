@@ -12,6 +12,10 @@ public interface User {
 
     Channel getCurrent();
 
-    List<Channel> getAvailable();
+    String getName();
+
+    String getDisplyName();
+
+    List<? extends Channel> getAvailable();
 
 }

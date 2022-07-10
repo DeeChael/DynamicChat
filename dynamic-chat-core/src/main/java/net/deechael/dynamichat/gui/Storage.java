@@ -16,7 +16,10 @@ public abstract class Storage implements Slot {
     public abstract boolean isAllow(Player viewer, ItemStack cursorItem);
 
     public ItemStack getStored(Player viewer) {
-        return itemStacks.containsKey(viewer) ? itemStacks.get(viewer) : defaultItem;
+        ItemStack itemStack = itemStacks.containsKey(viewer) ? itemStacks.get(viewer) : defaultItem;
+        if (itemStack != null)
+            itemStack = itemStack.getType() == Material.AIR ? null : itemStack;
+        return itemStack;
     }
 
     final void setStored(Player viewer, ItemStack itemStack) {

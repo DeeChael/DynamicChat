@@ -28,6 +28,7 @@ public final class ConfigUtils {
                 configuration.set("chat-color.gradient", false);
                 configuration.set("chat-color.changeable", false);
                 configuration.set("message-format.chat", "%player_displayname%: %message%");
+                configuration.set("message-format.channel-message", "%dynamichat_channel_displayname%: %message%");
                 configuration.set("message-format.say-command", "[%sender%] %message%");
                 configuration.set("message-format.whisper.send", "You -> %receiver%: %message%");
                 configuration.set("message-format.whisper.receive", "%sender% -> you: %message%");

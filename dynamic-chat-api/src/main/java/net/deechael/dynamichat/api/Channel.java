@@ -1,8 +1,15 @@
 package net.deechael.dynamichat.api;
 
+import java.util.List;
+
 public interface Channel {
 
-    void sendMessage(String message);
+    void broadcast(String message);
 
+    List<User> getUsers();
+
+    String getName();
+
+    String getDisplayName();
 
 }

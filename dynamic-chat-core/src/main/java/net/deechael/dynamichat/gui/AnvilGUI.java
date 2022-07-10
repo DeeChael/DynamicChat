@@ -18,12 +18,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
-import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -147,25 +145,24 @@ public final class AnvilGUI implements Listener {
                         if (inputs.containsKey(event.getRawSlot())) {
                             event.setCancelled(true);
                             Slot input = inputs.get(event.getRawSlot());
-                            if (input instanceof Clicker) {
-                                ((Clicker) input).click(player, event.getClick(), event.getAction());
-                            } else if (input instanceof Storage) {
-                                Storage storage = (Storage) input;
+                            if (input instanceof Clicker clicker) {
+                                clicker.click(player, event.getClick(), event.getAction());
+                            } else if (input instanceof Storage storage) {
                                 ItemStack cursor = event.getCursor();
                                 if (cursor == null)
                                     cursor = new ItemStack(Material.AIR);
                                 ItemStack storageItem = storage.getStored(player);
                                 if (cursor.getType() == Material.AIR) {
                                     storage.setStored(player, null);
-                                    player.setItemOnCursor(storageItem);
+                                    event.getView().setCursor(storageItem);
                                     event.getClickedInventory().setItem(event.getRawSlot(), null);
                                 } else {
                                     if (storage.isAllow(player, cursor)) {
                                         storage.setStored(player, cursor);
-                                        player.setItemOnCursor(storageItem);
+                                        event.getView().setCursor(storageItem);
                                         event.getClickedInventory().setItem(event.getRawSlot(), cursor);
                                     } else {
-                                        player.setItemOnCursor(cursor);
+                                        event.getView().setCursor(cursor);
                                         event.getClickedInventory().setItem(event.getRawSlot(), storageItem);
                                     }
                                 }

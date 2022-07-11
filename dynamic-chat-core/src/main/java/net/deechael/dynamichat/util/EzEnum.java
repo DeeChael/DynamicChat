@@ -34,12 +34,6 @@ public final class EzEnum {
         }
     }
 
-    public void setInstance(Object object) {
-        if (!clazz.isInstance(object)) throw new IllegalArgumentException("Argument object doesn't extended class " + clazz.getName());
-        this.object = object;
-        created = true;
-    }
-
     public Object getField(String fieldName) {
         if (!created) throw new IllegalStateException("Haven't create a new instance");
         try {
@@ -99,7 +93,8 @@ public final class EzEnum {
         if (!created) throw new IllegalStateException("Haven't create a new instance");
         try {
             Method method = clazz.getDeclaredMethod(methodName, classes);
-            if (Modifier.isStatic(method.getModifiers())) throw new IllegalAccessException("Method \"" + methodName + "\" is a static method");
+            if (Modifier.isStatic(method.getModifiers()))
+                throw new IllegalAccessException("Method \"" + methodName + "\" is a static method");
             method.setAccessible(true);
             if (method.getReturnType().equals(void.class)) return null;
             return method.invoke(this.object, arguments);
@@ -113,7 +108,8 @@ public final class EzEnum {
     public Object invokeStaticMethod(String methodName, Class<?>[] classes, Object[] arguments) {
         try {
             Method method = clazz.getDeclaredMethod(methodName, classes);
-            if (!Modifier.isStatic(method.getModifiers())) throw new IllegalAccessException("Method \"" + methodName + "\" is not a static method");
+            if (!Modifier.isStatic(method.getModifiers()))
+                throw new IllegalAccessException("Method \"" + methodName + "\" is not a static method");
             method.setAccessible(true);
             if (method.getReturnType().equals(void.class)) return null;
             return method.invoke(null, arguments);
@@ -148,11 +144,18 @@ public final class EzEnum {
     }
 
     public Object valueOf(String name) {
-        return invokeStaticMethod("valueOf", new Class[] {String.class}, new Object[] {name});
+        return invokeStaticMethod("valueOf", new Class[]{String.class}, new Object[]{name});
     }
 
     public Object getInstance() {
         return this.object;
+    }
+
+    public void setInstance(Object object) {
+        if (!clazz.isInstance(object))
+            throw new IllegalArgumentException("Argument object doesn't extended class " + clazz.getName());
+        this.object = object;
+        created = true;
     }
 
     @Override

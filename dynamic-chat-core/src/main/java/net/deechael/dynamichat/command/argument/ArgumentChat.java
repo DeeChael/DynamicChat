@@ -21,7 +21,7 @@ public final class ArgumentChat implements Argument {
 
     public static String chatToString(Object iChatBaseComponent) {
         try {
-            return (String) iChatBaseComponent.getClass().getMethod("getText").invoke(iChatBaseComponent);
+            return (String) iChatBaseComponent.getClass().getMethod("getString").invoke(iChatBaseComponent);
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();
         }

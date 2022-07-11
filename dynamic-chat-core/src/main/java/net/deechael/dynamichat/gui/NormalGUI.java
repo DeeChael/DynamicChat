@@ -19,40 +19,11 @@ import java.util.Objects;
 
 public class NormalGUI implements Listener {
 
-    public static enum Type {
-
-        NORMAL_1X9(1),
-        NORMAL_2X9(2),
-        NORMAL_3X9(3),
-        NORMAL_4X9(4),
-        NORMAL_5X9(5),
-        NORMAL_6X9(6);
-
-        private final int lines;
-
-        Type(int lines) {
-            this.lines = lines;
-        }
-
-        public int getLines() {
-            return lines;
-        }
-
-        public int getSlots() {
-            return lines * 9;
-        }
-
-    }
-
     private final Plugin plugin;
-
     private final Map<Player, Inventory> cache = new HashMap<>();
     private final Map<Integer, Slot> inputs = new HashMap<>();
-
     private final Type type;
-
     private final String title;
-
     private boolean dropped = false;
 
     public NormalGUI(Plugin plugin, Type type) {
@@ -87,7 +58,8 @@ public class NormalGUI implements Listener {
     }
 
     public Inventory getBukkit(Player player) {
-        if (isDropped() || !cache.containsKey(player)) throw new RuntimeException("The gui which player is watching is not this gui!");
+        if (isDropped() || !cache.containsKey(player))
+            throw new RuntimeException("The gui which player is watching is not this gui!");
         return cache.get(player);
     }
 
@@ -166,6 +138,31 @@ public class NormalGUI implements Listener {
     public void onQuit(PlayerQuitEvent event) {
         if (isDropped()) return;
         cache.remove(event.getPlayer());
+    }
+
+    public enum Type {
+
+        NORMAL_1X9(1),
+        NORMAL_2X9(2),
+        NORMAL_3X9(3),
+        NORMAL_4X9(4),
+        NORMAL_5X9(5),
+        NORMAL_6X9(6);
+
+        private final int lines;
+
+        Type(int lines) {
+            this.lines = lines;
+        }
+
+        public int getLines() {
+            return lines;
+        }
+
+        public int getSlots() {
+            return lines * 9;
+        }
+
     }
 
 }

@@ -2,6 +2,7 @@ package net.deechael.dynamichat.util;
 
 
 import java.lang.reflect.*;
+
 public final class EzClass {
 
     private final Class<?> clazz;
@@ -51,12 +52,6 @@ public final class EzClass {
         } else {
             throw new IllegalStateException("Instance has been created");
         }
-    }
-
-    public void setInstance(Object object) {
-        if (!clazz.isInstance(object)) throw new IllegalArgumentException("Argument object doesn't extended class " + clazz.getName());
-        this.object = object;
-        created = true;
     }
 
     public Object getField(String fieldName) {
@@ -118,7 +113,8 @@ public final class EzClass {
         if (!created) throw new IllegalStateException("Haven't create a new instance");
         try {
             Method method = this.clazz.getDeclaredMethod(methodName, classes);
-            if (Modifier.isStatic(method.getModifiers())) throw new IllegalAccessException("Method \"" + methodName + "\" is a static method");
+            if (Modifier.isStatic(method.getModifiers()))
+                throw new IllegalAccessException("Method \"" + methodName + "\" is a static method");
             method.setAccessible(true);
             Object object = method.invoke(this.object, arguments);
             if (method.getReturnType().equals(void.class)) return null;
@@ -133,7 +129,8 @@ public final class EzClass {
     public Object invokeStaticMethod(String methodName, Class<?>[] classes, Object[] arguments) {
         try {
             Method method = clazz.getDeclaredMethod(methodName, classes);
-            if (!Modifier.isStatic(method.getModifiers())) throw new IllegalAccessException("Method \"" + methodName + "\" is not a static method");
+            if (!Modifier.isStatic(method.getModifiers()))
+                throw new IllegalAccessException("Method \"" + methodName + "\" is not a static method");
             method.setAccessible(true);
             Object object = method.invoke(null, arguments);
             if (method.getReturnType().equals(void.class)) return null;
@@ -180,6 +177,13 @@ public final class EzClass {
 
     public Object getInstance() {
         return this.object;
+    }
+
+    public void setInstance(Object object) {
+        if (!clazz.isInstance(object))
+            throw new IllegalArgumentException("Argument object doesn't extended class " + clazz.getName());
+        this.object = object;
+        created = true;
     }
 
     @Override

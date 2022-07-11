@@ -14,8 +14,14 @@ public interface User {
 
     String getName();
 
-    String getDisplyName();
+    String getDisplayName();
 
     List<? extends Channel> getAvailable();
+
+    void moveTo(Channel channel);
+
+    void available(Channel channel);
+
+    void unavailable(Channel channel);
 
 }

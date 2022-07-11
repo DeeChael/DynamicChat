@@ -1,6 +1,5 @@
 package net.deechael.dynamichat.command;
 
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
@@ -14,8 +13,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Objects;
 import java.util.function.BiFunction;
 
 public final class EzArgument {

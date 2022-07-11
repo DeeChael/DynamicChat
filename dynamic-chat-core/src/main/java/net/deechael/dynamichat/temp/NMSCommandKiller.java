@@ -1,7 +1,6 @@
 package net.deechael.dynamichat.temp;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.tree.CommandNode;
@@ -153,7 +152,11 @@ public final class NMSCommandKiller {
         }
     }
 
-    private static void setKnownCommands(Map<String,Command> knownCommands) {
+    private static Map<String, Command> getKnownCommands() {
+        return (Map<String, Command>) Ref.invoke(getCommandMap(), Objects.requireNonNull(Ref.getField(SimpleCommandMap.class, "knownCommands")));
+    }
+
+    private static void setKnownCommands(Map<String, Command> knownCommands) {
         try {
             Field field = SimpleCommandMap.class.getDeclaredField("knownCommands");
             field.setAccessible(true);
@@ -161,10 +164,6 @@ public final class NMSCommandKiller {
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
-    }
-
-    private static Map<String,Command> getKnownCommands() {
-        return (Map<String, Command>) Ref.invoke(getCommandMap(), Objects.requireNonNull(Ref.getField(SimpleCommandMap.class, "knownCommands")));
     }
 
     private static CommandMap getCommandMap() {

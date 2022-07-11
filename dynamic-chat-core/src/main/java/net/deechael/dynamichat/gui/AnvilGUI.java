@@ -28,29 +28,11 @@ import java.util.Objects;
 public final class AnvilGUI implements Listener {
 
     private static Class<?> anvilClass = null;
-
-    public enum AnvilSlot {
-        LEFT_INPUT(0), RIGHT_INPUT(1), OUTPUT(2);
-
-        private final int slot;
-
-        AnvilSlot(int slot) {
-            this.slot = slot;
-        }
-
-        public int getSlot() {
-            return slot;
-        }
-    }
-
     private final Plugin plugin;
-
     private final Map<Player, Inventory> cache = new HashMap<>();
     private final Map<Integer, Slot> inputs = new HashMap<>();
-
-    private boolean dropped = false;
-
     private final String title;
+    private boolean dropped = false;
 
     public AnvilGUI(Plugin plugin) {
         this(plugin, "Anvil");
@@ -87,7 +69,8 @@ public final class AnvilGUI implements Listener {
     }
 
     public Inventory getBukkit(Player player) {
-        if (isDropped() || !cache.containsKey(player)) throw new RuntimeException("The gui which player is watching is not this gui!");
+        if (isDropped() || !cache.containsKey(player))
+            throw new RuntimeException("The gui which player is watching is not this gui!");
         return cache.get(player);
     }
 
@@ -107,7 +90,8 @@ public final class AnvilGUI implements Listener {
             }
             anvil.open(title);
             cache.put(player, inventory);
-        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
+                 InvocationTargetException e) {
             e.printStackTrace();
         }
     }
@@ -122,10 +106,6 @@ public final class AnvilGUI implements Listener {
         HandlerList.unregisterAll(this);
         dropped = true;
     }
-
-    ///////////////////////////////////////////////////////////
-    //////                Player Listener                //////
-    ///////////////////////////////////////////////////////////
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
@@ -174,6 +154,10 @@ public final class AnvilGUI implements Listener {
         }
     }
 
+    ///////////////////////////////////////////////////////////
+    //////                Player Listener                //////
+    ///////////////////////////////////////////////////////////
+
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
         if (isDropped()) return;
@@ -192,12 +176,6 @@ public final class AnvilGUI implements Listener {
         if (isDropped()) return;
         cache.remove(event.getPlayer());
     }
-
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////                                     Dynamic Class Generator                                       ///////
-    ///////             2022 DCG Project - https://www.github.com/DeeChael/DynamicClassGenerator              ///////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
     private Class<?> generateAnvilClass() {
         JClass anvil = new JClass(Level.PUBLIC, "net.deechael.dynamichat.gui", "NMSAnvil");
@@ -247,11 +225,11 @@ public final class AnvilGUI implements Listener {
             } else if (Ref.getVersion() == 18) {
                 inventory = Var.invokeMethod(entityPlayer, "fr");
             } else if (Ref.getVersion() == 17) {
-                 inventory = Var.invokeMethod(entityPlayer, "fq");
+                inventory = Var.invokeMethod(entityPlayer, "fq");
             } else if (Ref.getVersion() == 16) {
-                    inventory = Var.invokeMethod(entityPlayer, "getInventory");
+                inventory = Var.invokeMethod(entityPlayer, "getInventory");
             } else {
-                 inventory = Var.objectsField(entityPlayer, "inventory");
+                inventory = Var.objectsField(entityPlayer, "inventory");
             }
             Var blockPosition = Var.constructor(JType.classType(Ref.getNmsOrOld("core.BlockPosition", "BlockPosition")), int0, int0, int0);
             Var containerAccess;
@@ -266,7 +244,8 @@ public final class AnvilGUI implements Listener {
         constructor.setThisFieldValue(anvil.getField("checkReachable"), JStringVar.booleanVar(false));
         constructor.setThisFieldValue(bukkitPlayer, player);
 
-        String resetCost_name;if (Ref.getVersion() >= 17) {
+        String resetCost_name;
+        if (Ref.getVersion() >= 17) {
             resetCost_name = "l";
         } else if (Ref.getVersion() == 16) {
             resetCost_name = "i";
@@ -359,6 +338,26 @@ public final class AnvilGUI implements Listener {
             return JGenerator.generate(anvil);
         } catch (URISyntaxException e) {
             throw new RuntimeException("Failed to create anvil gui!");
+        }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////                                     Dynamic Class Generator                                       ///////
+    ///////             2022 DCG Project - https://www.github.com/DeeChael/DynamicClassGenerator              ///////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    public enum AnvilSlot {
+        LEFT_INPUT(0), RIGHT_INPUT(1), OUTPUT(2);
+
+        private final int slot;
+
+        AnvilSlot(int slot) {
+            this.slot = slot;
+        }
+
+        public int getSlot() {
+            return slot;
         }
     }
 

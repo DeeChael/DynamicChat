@@ -2,15 +2,16 @@ package net.deechael.dynamichat.util;
 
 import net.deechael.dynamichat.DyChatPlugin;
 import net.deechael.dynamichat.feature.Filter;
+import net.deechael.useless.objs.FiObj;
+import net.deechael.useless.objs.TriObj;
+import org.bukkit.configuration.Configuration;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import java.awt.color.ICC_ColorSpace;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public final class ConfigUtils {
 
@@ -28,25 +29,33 @@ public final class ConfigUtils {
         if (!configFile.exists()) {
             try {
                 configFile.createNewFile();
-                configuration = YamlConfiguration.loadConfiguration(configFile);
-                configuration.set("mention-player", true);
-                configuration.set("chat-color.enable", false);
-                configuration.set("chat-color.gradient", false);
-                configuration.set("chat-color.changeable", false);
-                configuration.set("multi-language.follow-client", true);
-                configuration.set("multi-language.default", "en_US");
-                configuration.set("message-format.chat", "%player_displayname%: %message%");
-                configuration.set("message-format.channel-message", "%dynamichat_channel_displayname%: %message%");
-                configuration.set("message-format.say-command", "[%sender%] %message%");
-                configuration.set("message-format.whisper.send", "You -> %receiver%: %message%");
-                configuration.set("message-format.whisper.receive", "%sender% -> you: %message%");
-                configuration.set("replace.enable", false);
-                configuration.set("filter.enable", false);
-                configuration.set("filter.mode", "replace");
             } catch (IOException ignored) {
             }
         }
-        File languageFile = new File(new File(DyChatPlugin.getInstance().getDataFolder(), "languages"), configuration.getString("multi-language.default", "en_US") + ".yml");
+        configuration = YamlConfiguration.loadConfiguration(configFile);
+        setDefault(configuration, "mention-player", false);
+        setDefault(configuration, "channel.enable", false);
+        setDefault(configuration, "channel.global-name", "Global");
+        setDefault(configuration, "chat-color.enable", false);
+        setDefault(configuration, "chat-color.gradient", false);
+        setDefault(configuration, "chat-color.changeable", false);
+        setDefault(configuration, "multi-language.follow-client", true);
+        setDefault(configuration, "multi-language.default", "en_us");
+        setDefault(configuration, "message-format.chat", "%player_displayname%: %message%");
+        setDefault(configuration, "message-format.channel-message", "[%dynamichat_currentChannelDisplay%] %message%");
+        setDefault(configuration, "message-format.say-command", "[%sender%] %message%");
+        setDefault(configuration, "message-format.whisper.send", "You -> %receiver%: %message%");
+        setDefault(configuration, "message-format.whisper.receive", "%sender% -> you: %message%");
+        setDefault(configuration, "replace.enable", false);
+        setDefault(configuration, "filter.enable", false);
+        setDefault(configuration, "filter.mode", "replace");
+        File languageFile = new File(new File(DyChatPlugin.getInstance().getDataFolder(), "languages"), configuration.getString("multi-language.default", "en_us") + ".yml");
+        File languageParent = languageFile.getParentFile();
+        if (languageParent != null) {
+            if (!languageParent.exists()) {
+                languageParent.mkdirs();
+            }
+        }
         if (!languageFile.exists()) {
             try {
                 languageFile.createNewFile();
@@ -54,10 +63,15 @@ public final class ConfigUtils {
             }
         }
         languageConfiguration = YamlConfiguration.loadConfiguration(languageFile);
-        setDefault(languageConfiguration, "command.gotohelp", "&c(!) Please type \"/dynamic-chat help\" to get help!");
+        setDefault(languageConfiguration, "command.gotohelp", "&c&l(!) &r&cPlease type \"/dynamic-chat help\" to get help!");
         setDefault(languageConfiguration, "command.main-help", Arrays.asList("&6&l==============================", "&e/dynamic-chat help - get help", "&e/dynamic-chat reload - reload configuration", "&6&l=============================="));
-        setDefault(languageConfiguration, "command.main-reload-success", "&a(!) Reloaded configuration successfully");
-        setDefault(languageConfiguration, "message.filter-cancel", "&a(!) There are some illegal words");
+        setDefault(languageConfiguration, "command.main-reload-success", "&a&l(!) &r&aReloaded configuration successfully");
+        setDefault(languageConfiguration, "command.channel-gotohelp", "&c&l(!) &rPlease type \"/dynamic-chat help\" to get help!");
+        setDefault(languageConfiguration, "command.channel-help", Arrays.asList("&6&l==============================", "&e/channel help - get help", "&e/channel switch <channel> - switch channel", "&6&l=============================="));
+        setDefault(languageConfiguration, "command.channel-notexists", "&c&l(!) &r&cThe channel not exists");
+        setDefault(languageConfiguration, "command.channel-switch-success", "&a&l(!) &r&aYou switch channel to &b{0}");
+        setDefault(languageConfiguration, "command.channel-notavailable", "&c&l(!) &r&cYou have no access to &f{0}");
+        setDefault(languageConfiguration, "message.filter-cancel", "&c&l(!) &r&cThere are some illegal words");
         setDefault(languageConfiguration, "message.filter-cancel-edit-button", "&e&l[Click to edit]");
         setDefault(languageConfiguration, "message.filter-cancel-edit-button-hover", "&b&lClick here to edit!");
     }
@@ -65,6 +79,7 @@ public final class ConfigUtils {
     public static void save() {
         try {
             configuration.save(new File(DyChatPlugin.getInstance().getDataFolder(), "config.yml"));
+            languageConfiguration.save(new File(new File(DyChatPlugin.getInstance().getDataFolder(), "languages"), configuration.getString("multi-language.default", "en_us") + ".yml"));
         } catch (IOException ignored) {
         }
     }
@@ -85,6 +100,21 @@ public final class ConfigUtils {
         return configuration.getBoolean("chat-color.gradient");
     }
 
+    public static boolean mentionPlayer() {
+        check();
+        return configuration.getBoolean("mention-player");
+    }
+
+    public static boolean languageFollowClient() {
+        check();
+        return configuration.getBoolean("multi-language.follow-client");
+    }
+
+    public static String globalChannelDisplayName() {
+        check();
+        return configuration.getString("channel.global-name");
+    }
+
     public static boolean chatColorChangeable() {
         check();
         return configuration.getBoolean("chat-color.changeable");
@@ -95,11 +125,44 @@ public final class ConfigUtils {
         return configuration.getBoolean("filter.enable");
     }
 
+    public static boolean replaceEnable() {
+        check();
+        return configuration.getBoolean("replace.enable");
+    }
+
+    public static boolean channelEnable() {
+        check();
+        return configuration.getBoolean("channel.enable");
+    }
+
     public static Filter.Mode filterMode() {
         check();
         return Filter.Mode.valueOf(configuration.getString("filter.mode", "replace").toUpperCase());
     }
 
+    public static List<TriObj<String, String, Integer>> permissionFormat() {
+        check();
+        return permissionFormat(configuration.getConfigurationSection("message-format.permissions"));
+    }
+
+    private static List<TriObj<String, String, Integer>> permissionFormat(ConfigurationSection section) {
+        List<TriObj<String, String, Integer>> formats = new ArrayList<>();
+        if (section != null) {
+            for (String key : section.getKeys(false)) {
+                if (!section.contains(key + ".permission"))
+                    continue;
+                if (!section.contains(key + ".format"))
+                    continue;
+                if (!section.isString(key + ".permission"))
+                    continue;
+                if (!section.isString(key + ".format"))
+                    continue;
+                int priority = 0;
+                formats.add(new TriObj<>(section.getString(key + ".permission"), section.getString(key + ".format"), priority));
+            }
+        }
+        return formats;
+    }
 
     public static List<Filter.Checker> filters() {
         check();
@@ -122,20 +185,90 @@ public final class ConfigUtils {
         return filters;
     }
 
+    public static Map<String, String> replaces() {
+        Map<String, String> replaces = new HashMap<>();
+        ConfigurationSection section = configuration.getConfigurationSection("replace.replaces");
+        if (section != null) {
+            for (String key : section.getKeys(false)) {
+                if (!section.contains(key + ".key"))
+                    continue;
+                if (!section.contains(key + ".value"))
+                    continue;
+                if (!section.isString(key + ".key"))
+                    continue;
+                if (!section.isString(key + ".value"))
+                    continue;
+                replaces.put(section.getString(key + ".key"), section.getString(key + ".value"));
+            }
+        }
+        return replaces;
+    }
+
+    public static List<FiObj<String, String, Boolean, String, List<TriObj<String, String, Integer>>>> channels() {
+        List<FiObj<String, String, Boolean, String, List<TriObj<String, String, Integer>>>> channels = new ArrayList<>();
+        ConfigurationSection section = configuration.getConfigurationSection("channel.channels");
+        if (section != null) {
+            for (String key : section.getKeys(false)) {
+                if (!section.contains(key + ".name") || !section.isString(key + ".name"))
+                    continue;
+                if (Objects.equals(section.getString(key + ".name"), "global"))
+                    continue;
+                String displayName = null;
+                boolean availableForAll = true;
+                String format = null;
+                List<TriObj<String, String, Integer>> permissionFormats = permissionFormat(section.getConfigurationSection(key + ".permissions"));
+                if (section.contains(key + ".display") && section.isString(key + ".display"))
+                    displayName = section.getString(key + ".display");
+                // if (section.contains(key + ".all-available") && section.isBoolean(key + ".all-available"))
+                //     availableForAll = section.getBoolean(key + ".all-available");
+                if (section.contains(key + ".format") && section.isString(key + ".format"))
+                    format = section.getString(key + ".format");
+                channels.add(new FiObj<>(section.getString(key + ".name"), displayName, availableForAll, format, permissionFormats));
+            }
+        }
+        return channels;
+    }
+
     public static String getChatFormat() {
         check();
         return configuration.getString("message-format.chat");
     }
 
+    public static String channelMessageFormat() {
+        check();
+        return configuration.getString("message-format.channel-message");
+    }
+
+    public static String lang() {
+        check();
+        return configuration.getString("multi-language.default");
+    }
+
     public static String lang(String key) {
+        return lang(languageConfiguration, key);
+    }
+
+    public static String lang(String name, String key) {
+        File langFile = new File(new File(DyChatPlugin.getInstance().getDataFolder(), "languages"), name + ".yml");
+        if (!langFile.exists()) {
+            return lang(key);
+        }
+        FileConfiguration lang = YamlConfiguration.loadConfiguration(langFile);
+        if (!lang.contains(key)) {
+            return lang(key);
+        }
+        return ColorUtils.processGradientColor(ColorUtils.processChatColor(lang(lang, key)));
+    }
+
+    private static String lang(Configuration languageConfiguration, String key) {
         if (!languageConfiguration.contains(key))
             return "Unknown message: " + key;
         if (languageConfiguration.isList(key)) {
             List<String> stringList = languageConfiguration.getStringList(key);
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i < stringList.size(); i++) {
+                builder.append(stringList.get(i));
                 if (i != stringList.size() - 1) {
-                    builder.append(stringList.get(i));
                     builder.append("\n");
                 }
             }

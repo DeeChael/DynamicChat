@@ -9,9 +9,8 @@ import java.util.Map;
 
 public abstract class Storage implements Slot {
 
-    private ItemStack defaultItem = null;
-
     private final Map<Player, ItemStack> itemStacks = new HashMap<>();
+    private ItemStack defaultItem = null;
 
     public abstract boolean isAllow(Player viewer, ItemStack cursorItem);
 

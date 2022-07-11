@@ -3,7 +3,7 @@ package net.deechael.dynamichat.entity;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.deechael.dynamichat.api.PlayerUser;
 import net.deechael.dynamichat.api.User;
-import net.deechael.dynamichat.util.ConfigUtils;
+import net.deechael.dynamichat.placeholder.DynamicChatPlaceholder;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -34,12 +34,7 @@ public class PlayerUserEntity extends UserEntity implements PlayerUser {
     }
 
     @Override
-    public void chat(String message) {
-
-    }
-
-    @Override
-    public String getDisplyName() {
+    public String getDisplayName() {
         return player.getDisplayName();
     }
 
@@ -48,8 +43,8 @@ public class PlayerUserEntity extends UserEntity implements PlayerUser {
         return player;
     }
 
-    void chat0(String message) {
-        getCurrent().broadcast0(PlaceholderAPI.setPlaceholders(this.player, ConfigUtils.getChatFormat()).replace("%message%", message));
+    void chat0(CommandSender sender, String format, String message) {
+        sender.sendMessage(PlaceholderAPI.setPlaceholders(this.player, DynamicChatPlaceholder.replaceSender(this.player, format.replace("%message%", message))));
     }
 
 

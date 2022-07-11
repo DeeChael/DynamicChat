@@ -9,17 +9,32 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 public class Filter {
 
-    public static enum Mode {
+    public static String set(String message) {
+        for (Checker checker : ConfigUtils.filters()) {
+            message = checker.set(message);
+        }
+        return message;
+    }
+
+    public static boolean suit(String message) {
+        for (Checker checker : ConfigUtils.filters()) {
+            if (checker.suit(message)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public enum Mode {
         REPLACE, CANCEL
     }
 
-    public static enum CheckMode {
+    public enum CheckMode {
 
-        PINYIN, ENGLISH, CHINESE, PINYIN_STARTSWITH;
+        PINYIN, ENGLISH, CHINESE, PINYIN_STARTSWITH
 
     }
 
@@ -60,7 +75,7 @@ public class Filter {
                             boolean has = false;
                             for (Pronunciation pronunciation : ChineseCharacterLibrary.get(checking[j]).getPronunciations()) {
                                 if (pronunciation.getPhoneticizationStringWithV().equalsIgnoreCase(divided.get(j))
-                                || pronunciation.getPhoneticizationString().equalsIgnoreCase(divided.get(j))) {
+                                        || pronunciation.getPhoneticizationString().equalsIgnoreCase(divided.get(j))) {
                                     has = true;
                                     break;
                                 }
@@ -200,6 +215,9 @@ public class Filter {
                             }
                             continue;
                         }
+                        if (i + divided.size() >= message.length()) {
+                            break;
+                        }
                         return true;
                     }
                 }
@@ -245,6 +263,9 @@ public class Filter {
                             }
                             continue;
                         }
+                        if (i + divided.size() >= message.length()) {
+                            break;
+                        }
                         return true;
                     }
                 }
@@ -255,29 +276,11 @@ public class Filter {
                 Pattern two_spaces = Pattern.compile(".* (?i)" + safedKeyword + " .*");
                 Pattern start_spaces = Pattern.compile(".* (?i)" + safedKeyword + ".*");
                 Pattern end_spaces = Pattern.compile(".*(?i)" + safedKeyword + " .*");
-                if (two_spaces.matcher(message).matches() || start_spaces.matcher(message).matches() || end_spaces.matcher(message).matches() || message.equalsIgnoreCase(keyword)) {
-                    return true;
-                }
+                return two_spaces.matcher(message).matches() || start_spaces.matcher(message).matches() || end_spaces.matcher(message).matches() || message.equalsIgnoreCase(keyword);
             }
             return false;
         }
 
-    }
-
-    public static String set(String message) {
-        for (Checker checker : ConfigUtils.filters()) {
-            message = checker.set(message);
-        }
-        return message;
-    }
-
-    public static boolean suit(String message) {
-        for (Checker checker : ConfigUtils.filters()) {
-            if (checker.suit(message)) {
-                return true;
-            }
-        }
-        return false;
     }
 
 }

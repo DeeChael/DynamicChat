@@ -7,8 +7,6 @@ import java.lang.reflect.*;
 
 public class Ref {
 
-    private Ref() {}
-
     private static Unsafe UNSAFE;
 
     static {
@@ -18,6 +16,9 @@ public class Ref {
             UNSAFE = (Unsafe) field.get(null);
         } catch (NoSuchFieldException | IllegalAccessException ignored) {
         }
+    }
+
+    private Ref() {
     }
 
     public static Unsafe getUnsafe() {

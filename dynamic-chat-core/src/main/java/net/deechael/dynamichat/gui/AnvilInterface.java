@@ -1,6 +1,5 @@
 package net.deechael.dynamichat.gui;
 
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
 public interface AnvilInterface {

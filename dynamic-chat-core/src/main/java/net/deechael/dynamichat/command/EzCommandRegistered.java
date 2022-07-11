@@ -12,8 +12,8 @@ import java.util.List;
 public final class EzCommandRegistered {
 
     final EzCommand ezCommand;
-    CommandNode<Object> commandNode;
     private final List<CommandNode<Object>> aliases = new ArrayList<>();
+    CommandNode<Object> commandNode;
 
     EzCommandRegistered(EzCommand ezCommand) {
         this.ezCommand = ezCommand;

@@ -1,5 +1,6 @@
 package net.deechael.dynamichat.gui;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -13,6 +14,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -36,31 +39,55 @@ public class NormalGUI implements Listener {
         this.title = title;
     }
 
-    public boolean hasItem(AnvilGUI.AnvilSlot slot) {
+    public boolean hasItem(int slot) {
         if (isDropped()) return false;
-        return inputs.containsKey(slot.getSlot());
+        return inputs.containsKey(slot);
     }
 
-    public Slot getItem(AnvilGUI.AnvilSlot slot) {
+    public Slot getItem(int slot) {
         if (isDropped()) throw new RuntimeException("This GUI has been dropped!");
         if (!hasItem(slot)) throw new RuntimeException("The slot is empty");
-        return inputs.get(slot.getSlot());
+        return inputs.get(slot);
     }
 
-    public void setItem(AnvilGUI.AnvilSlot slot, Slot input) {
+    public void setItem(int slot, Slot input) {
         if (isDropped()) return;
-        inputs.put(slot.getSlot(), input);
+        inputs.put(slot, input);
+        for (Map.Entry<Player, Inventory> entry : cache.entrySet()) {
+            if (input instanceof Image image) {
+                entry.getValue().setItem(slot, image.draw(entry.getKey(), entry.getValue()));
+            }
+        }
     }
 
-    public Slot remove(AnvilGUI.AnvilSlot slot) {
+    public Slot remove(int slot) {
         if (isDropped()) throw new RuntimeException("The GUI has been dropped!");
-        return inputs.remove(slot.getSlot());
+        return inputs.remove(slot);
     }
 
     public Inventory getBukkit(Player player) {
         if (isDropped() || !cache.containsKey(player))
             throw new RuntimeException("The gui which player is watching is not this gui!");
         return cache.get(player);
+    }
+
+
+    public void open(Player player) {
+        if (isDropped()) return;
+        Inventory inventory;
+        if (title != null) {
+            inventory = Bukkit.createInventory(null, this.type.getSlots(), title);
+        } else {
+            inventory = Bukkit.createInventory(null, this.type.getSlots());
+        }
+        for (int i : inputs.keySet()) {
+            Slot input = inputs.get(i);
+            if (input instanceof Image) {
+                inventory.setItem(i, ((Image) input).draw(player, inventory));
+            }
+        }
+        player.openInventory(inventory);
+        cache.put(player, inventory);
     }
 
     public boolean isDropped() {
@@ -77,8 +104,7 @@ public class NormalGUI implements Listener {
     @EventHandler
     public void onClick(InventoryClickEvent event) {
         if (isDropped()) return;
-        if (event.getWhoClicked() instanceof Player) {
-            Player player = (Player) event.getWhoClicked();
+        if (event.getWhoClicked() instanceof Player player) {
             if (cache.containsKey(player)) {
                 if (event.getView().getTopInventory().equals(cache.get(player))) {
                     if (Objects.equals(event.getClickedInventory(), event.getView().getTopInventory())) {
@@ -93,7 +119,7 @@ public class NormalGUI implements Listener {
                             event.setCancelled(true);
                             Slot input = inputs.get(event.getRawSlot());
                             if (input instanceof Clicker clicker) {
-                                clicker.click(player, event.getClick(), event.getAction());
+                                clicker.click(player, event.getView().getTopInventory(), event.getClick(), event.getAction());
                             } else if (input instanceof Storage storage) {
                                 ItemStack cursor = event.getCursor();
                                 if (cursor == null)

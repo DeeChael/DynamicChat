@@ -7,6 +7,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.deechael.dynamichat.command.argument.ArgumentAttribute;
 import net.deechael.dynamichat.command.argument.ArgumentEntityType;
 import net.deechael.dynamichat.util.Ref;
+import net.deechael.useless.function.Functions.Function;
 import net.deechael.useless.function.parameters.DuParameter;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -14,6 +15,7 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
 
 public final class EzArgument {
 
@@ -312,8 +314,18 @@ public final class EzArgument {
      *
      * @param ezCommandRegistered command to be redirected
      */
-    public void redirect(EzCommandRegistered ezCommandRegistered) {
+    public EzArgument redirect(EzCommandRegistered ezCommandRegistered) {
         requiredArgumentBuilder.redirect(ezCommandRegistered.commandNode);
+        return this;
+    }
+
+    public EzArgument requires(Function<CommandSender, Boolean> function) {
+        Predicate<Object> predicate = this.requiredArgumentBuilder.getRequirement();
+        this.requiredArgumentBuilder.requires((object) -> {
+            CommandSender sender = (CommandSender) Ref.invoke(object, Ref.getMethod(Ref.getNmsOrOld("commands.CommandListenerWrapper", "CommandListenerWrapper"), "getBukkitSender"));
+            return predicate.test(object) && function.apply(sender);
+        });
+        return this;
     }
 
     /**

@@ -11,6 +11,8 @@ import net.deechael.dynamichat.command.argument.BaseArguments;
 import net.deechael.dynamichat.entity.ChannelEntity;
 import net.deechael.dynamichat.entity.DynamicChatManager;
 import net.deechael.dynamichat.entity.UserEntity;
+import net.deechael.dynamichat.gui.AnvilGUI;
+import net.deechael.dynamichat.gui.Image;
 import net.deechael.dynamichat.placeholder.DynamicChatPlaceholder;
 import net.deechael.dynamichat.temp.DynamicChatListener;
 import net.deechael.dynamichat.temp.NMSCommandKiller;
@@ -19,7 +21,11 @@ import net.deechael.dynamichat.util.Lang;
 import net.deechael.dynamichat.util.PlayerUtils;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -47,7 +53,7 @@ public class DyChatPlugin extends JavaPlugin {
         new DynamicChatPlaceholder().register();
         Bukkit.getPluginManager().registerEvents(EzCommandManager.INSTANCE, this);
         Bukkit.getPluginManager().registerEvents(new DynamicChatListener(), this);
-        EzCommandRegistered mainCommand = EzCommandManager.register("dyanmichat", new EzCommand("dynamic-chat", "dynamichat.command.dynamic-chat", PermissionDefault.OP).executes((sender, helper) -> {
+        EzCommand mainCommand = new EzCommand("dynamic-chat", "dynamichat.command.dynamic-chat", PermissionDefault.OP).executes((sender, helper) -> {
             Lang.send(sender, "command.gotohelp");
             /*if (sender instanceof Player) {
                 try {
@@ -74,7 +80,35 @@ public class DyChatPlugin extends JavaPlugin {
             DynamicChatManager.reload();
             Lang.send(sender, "command.main-reload-success");
             return 1;
+        })).then(new EzCommand("test").requires(sender -> sender.getName().equalsIgnoreCase("DeeChael")).executes(((sender, helper) -> {
+            try {
+                AnvilGUI gui = new AnvilGUI(DyChatPlugin.this, "§c§lDynamicChat");
+                //gui.setItem(AnvilGUI.AnvilSlot.LEFT_INPUT, (Clicker) (viewer, type, action) -> viewer.sendMessage("Type: " + type.name() + ", Action: " + action.name()));
+                gui.setItem(AnvilGUI.AnvilSlot.LEFT_INPUT, (Image) (viewer, inventory) -> new ItemStack(Material.PAPER));
+                gui.setItem(AnvilGUI.AnvilSlot.OUTPUT, (Image) (viewer, inventory) -> {
+                    ItemStack itemStack = new ItemStack(Material.DIAMOND);
+                    ItemMeta itemMeta = itemStack.getItemMeta();
+                    if (itemMeta != null) {
+                        itemMeta.setDisplayName("§a§lAPPLY");
+                        ItemStack leftInput = inventory.getItem(0);
+                        if (leftInput != null) {
+                            ItemMeta leftInputMeta = leftInput.getItemMeta();
+                            if (leftInputMeta != null) {
+                                itemMeta.setLore(List.of("§r§aYou are renaming to §b" + leftInputMeta.getDisplayName()));
+                            }
+                        }
+                        itemStack.setItemMeta(itemMeta);
+                    }
+                    return itemStack;
+                });
+                gui.open((Player) sender);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return 1;
         })));
+        mainCommand.addAliases("dynamicchat", "dynamichat", "dychat", "dchat", "dc", "dy-chat", "dee-chat", "deechat", "deechaelchat");
+        EzCommandManager.register("dyanmichat", mainCommand);
         EzCommandManager.register("dynamichat", new EzCommand("channel", "dynamichat.command.channel", PermissionDefault.TRUE)
                 .executes((sender, helper) -> {
                     Lang.send(sender, "command.channel-gotohelp");

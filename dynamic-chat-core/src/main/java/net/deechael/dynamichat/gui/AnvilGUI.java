@@ -13,6 +13,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -61,6 +62,11 @@ public final class AnvilGUI implements Listener {
     public void setItem(AnvilSlot slot, Slot input) {
         if (isDropped()) return;
         inputs.put(slot.getSlot(), input);
+        for (Map.Entry<Player, Inventory> entry : cache.entrySet()) {
+            if (input instanceof Image image) {
+                entry.getValue().setItem(slot.getSlot(), image.draw(entry.getKey(), entry.getValue()));
+            }
+        }
     }
 
     public Slot remove(AnvilSlot slot) {
@@ -84,8 +90,8 @@ public final class AnvilGUI implements Listener {
             Inventory inventory = anvil.castToBukkit();
             for (int i : inputs.keySet()) {
                 Slot input = inputs.get(i);
-                if (input instanceof Image) {
-                    inventory.setItem(i, ((Image) input).draw(player));
+                if (input instanceof Image image) {
+                    inventory.setItem(i, image.draw(player, inventory));
                 }
             }
             anvil.open(title);
@@ -108,6 +114,21 @@ public final class AnvilGUI implements Listener {
     }
 
     @EventHandler
+    public void onAnvil(PrepareAnvilEvent event) {
+        Player player = (Player) event.getView().getPlayer();
+        if (cache.containsKey(player)) {
+            if (event.getView().getTopInventory().equals(cache.get(player))) {
+                if (inputs.containsKey(2)) {
+                    Slot input = inputs.get(2);
+                    if (input instanceof Image image) {
+                        event.setResult(image.draw(player, event.getView().getTopInventory()));
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
     public void onClick(InventoryClickEvent event) {
         if (isDropped()) return;
         if (event.getWhoClicked() instanceof Player) {
@@ -126,7 +147,7 @@ public final class AnvilGUI implements Listener {
                             event.setCancelled(true);
                             Slot input = inputs.get(event.getRawSlot());
                             if (input instanceof Clicker clicker) {
-                                clicker.click(player, event.getClick(), event.getAction());
+                                clicker.click(player, event.getView().getTopInventory(), event.getClick(), event.getAction());
                             } else if (input instanceof Storage storage) {
                                 ItemStack cursor = event.getCursor();
                                 if (cursor == null)

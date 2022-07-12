@@ -5,7 +5,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.Inventory;
 
-public interface Clicker extends Slot {
+public interface PageButton extends PageSlot{
 
     void click(Player viewer, Inventory inventory, ClickType type, InventoryAction action);
 

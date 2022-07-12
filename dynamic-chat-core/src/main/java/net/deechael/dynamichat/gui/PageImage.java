@@ -4,8 +4,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-public interface Image extends Slot {
+public interface PageImage extends PageSlot {
 
     ItemStack draw(Player viewer, Inventory inventory);
-
 }

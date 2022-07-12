@@ -2,6 +2,7 @@ package net.deechael.dynamichat.command;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.deechael.dynamichat.util.Ref;
+import net.deechael.useless.function.Functions.Function;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permission;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
 
 public final class EzCommand {
 
@@ -217,6 +219,15 @@ public final class EzCommand {
     public EzCommand redirect(EzCommandRegistered ezCommandRegistered) {
         if (registered) return this;
         literalArgumentBuilder.redirect(ezCommandRegistered.commandNode);
+        return this;
+    }
+
+    public EzCommand requires(Function<CommandSender, Boolean> function) {
+        Predicate<Object> predicate = this.literalArgumentBuilder.getRequirement();
+        this.literalArgumentBuilder.requires((object) -> {
+            CommandSender sender = (CommandSender) Ref.invoke(object, Ref.getMethod(Ref.getNmsOrOld("commands.CommandListenerWrapper", "CommandListenerWrapper"), "getBukkitSender"));
+            return predicate.test(object) && function.apply(sender);
+        });
         return this;
     }
 

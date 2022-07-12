@@ -64,6 +64,7 @@ public final class ConfigUtils {
         }
         languageConfiguration = YamlConfiguration.loadConfiguration(languageFile);
         setDefault(languageConfiguration, "command.gotohelp", "&c&l(!) &r&cPlease type \"/dynamic-chat help\" to get help!");
+        setDefault(languageConfiguration, "command.mustbeplayer", "&c&l(!) &r&cYou must be a player to use this command");
         setDefault(languageConfiguration, "command.main-help", Arrays.asList("&6&l==============================", "&e/dynamic-chat help - get help", "&e/dynamic-chat reload - reload configuration", "&6&l=============================="));
         setDefault(languageConfiguration, "command.main-reload-success", "&a&l(!) &r&aReloaded configuration successfully");
         setDefault(languageConfiguration, "command.channel-gotohelp", "&c&l(!) &rPlease type \"/dynamic-chat help\" to get help!");
@@ -71,9 +72,15 @@ public final class ConfigUtils {
         setDefault(languageConfiguration, "command.channel-notexists", "&c&l(!) &r&cThe channel not exists");
         setDefault(languageConfiguration, "command.channel-switch-success", "&a&l(!) &r&aYou switch channel to &b{0}");
         setDefault(languageConfiguration, "command.channel-notavailable", "&c&l(!) &r&cYou have no access to &f{0}");
+        setDefault(languageConfiguration, "command.chatcolor-gotohelp", "&c&l(!) &rPlease type \"/chat-color help\" to get help!");
+        setDefault(languageConfiguration, "command.chatcolor-help", Arrays.asList("&6&l==============================", "&e/chat-color help - get help", "&e/chat-color set color <color> - set the color", "&e/chat-color set gradient <from> <to> - set the gradient color", "&6&l=============================="));
+        setDefault(languageConfiguration, "command.chatcolor-set-success", "&a&l(!) &r&aYou set the chat color successfully");
+        setDefault(languageConfiguration, "command.chatcolor-set-unknowncolor", "&c&l(!) &r&cYou type a wrong color format");
+        setDefault(languageConfiguration, "command.chatcolor-reset-success", "&a&l(!) &r&aYou reset the chat color successfully");
         setDefault(languageConfiguration, "message.filter-cancel", "&c&l(!) &r&cThere are some illegal words");
         setDefault(languageConfiguration, "message.filter-cancel-edit-button", "&e&l[Click to edit]");
         setDefault(languageConfiguration, "message.filter-cancel-edit-button-hover", "&b&lClick here to edit!");
+        save();
     }
 
     public static void save() {

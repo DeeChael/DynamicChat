@@ -22,6 +22,7 @@ public final class UserChatEvent extends Event implements Cancellable {
     private final List<User> recipients;
 
     public UserChatEvent(User user, Channel channel, String format, String message, List<User> recipients) {
+        super(true);
         this.user = user;
         this.channel = channel;
         this.format = format;

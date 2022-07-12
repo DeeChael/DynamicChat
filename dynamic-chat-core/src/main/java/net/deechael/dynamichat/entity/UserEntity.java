@@ -1,14 +1,13 @@
 package net.deechael.dynamichat.entity;
 
+import me.clip.placeholderapi.PlaceholderAPI;
 import net.deechael.dynamichat.api.Channel;
 import net.deechael.dynamichat.api.ChatManager;
 import net.deechael.dynamichat.api.User;
 import net.deechael.dynamichat.event.UserChatEvent;
 import net.deechael.dynamichat.feature.Filter;
 import net.deechael.dynamichat.placeholder.DynamicChatPlaceholder;
-import net.deechael.dynamichat.util.ColorUtils;
-import net.deechael.dynamichat.util.ConfigUtils;
-import net.deechael.dynamichat.util.Lang;
+import net.deechael.dynamichat.util.*;
 import net.deechael.useless.objs.TriObj;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -47,6 +46,10 @@ public abstract class UserEntity implements User {
 
     @Override
     public void chat(String message) {
+        ChatColor chattingColor = null;
+        if (this instanceof PlayerUserEntity) {
+            chattingColor = PlayerUtils.color(((PlayerUserEntity) this).getSender());
+        }
         if (ConfigUtils.filterEnable()) {
             if (ConfigUtils.filterMode() == Filter.Mode.CANCEL) {
                 if (Filter.suit(message)) {
@@ -92,31 +95,58 @@ public abstract class UserEntity implements User {
                 return;
             }
             List<Player> hearers = new ArrayList<>();
-            boolean everyone = false;
+            boolean everyoneMessageFormatted = false;
             if (message.contains("@Everyone ")) {
-                message = message.replace("@Everyone ", "§6@Everyone §r");
+                everyoneMessageFormatted = true;
                 hearers.addAll(showers);
-                everyone = true;
             }/* else if (message.equalsIgnoreCase("@Everyone")) {
                 message = "§6@Everyone";
                 hearers.addAll(showers);
                 everyone = true;
             } */
             if (message.endsWith("@Everyone")) {
-                message = message.substring(0, message.length() - 9) + "§6@Everyone";
+                everyoneMessageFormatted = true;
                 hearers.clear();
                 hearers.addAll(showers);
-                everyone = true;
             }
-            if (!everyone) {
-                for (Player shower : new ArrayList<>(showers)) {
-                    if (shower.getName().equalsIgnoreCase("Everyone")) continue;
-                    if (message.contains("@" + shower.getName() + " ")) {
-                        String copiedMessage = message.replace("@" + shower.getName() + " ", "§6@" + shower.getName() + " §r");
-                        chat0(shower, getFormat(), copiedMessage);
-                        showers.remove(shower);
-                        if (!hearers.contains(shower)) hearers.add(shower);
+            for (Player shower : new ArrayList<>(showers)) {
+                if (shower.getName().equalsIgnoreCase("Everyone")) continue;
+                if (message.contains("@" + shower.getName() + " ")) {
+                    String copiedMessage = message;
+                    if (everyoneMessageFormatted) {
+                        if (chattingColor != null) {
+                            copiedMessage = chattingColor.applyWithMentionPlayerAndAll(copiedMessage, shower);
+                        }
+                    } else {
+                        if (chattingColor != null) {
+                            copiedMessage = chattingColor.applyWithMention(copiedMessage, shower);
+                        }
                     }
+                    copiedMessage = copiedMessage.replace("@" + shower.getName() + " ", "§6@" + shower.getName() + " §r").replace("@Everyone ", "§6@Everyone §r");
+                    if (copiedMessage.endsWith("@Everyone")) {
+                        copiedMessage = copiedMessage.substring(0, copiedMessage.length() - 9) + "§6@Everyone";
+                    } else if (copiedMessage.endsWith("@" + shower.getName())) {
+                        copiedMessage = copiedMessage.substring(0, copiedMessage.length() - shower.getName().length() - 1) + "§6@" + shower.getName();
+                    }
+                    chat0(shower, getFormat(), copiedMessage);
+                    showers.remove(shower);
+                    if (!hearers.contains(shower)) hearers.add(shower);
+                } else if (message.endsWith("@" + shower.getName())) {
+                    String copiedMessage = message;
+                    if (everyoneMessageFormatted) {
+                        if (chattingColor != null) {
+                            copiedMessage = chattingColor.applyWithMentionPlayerAndAll(copiedMessage, shower);
+                        }
+                    } else {
+                        if (chattingColor != null) {
+                            copiedMessage = chattingColor.applyWithMention(copiedMessage, shower);
+                        }
+                    }
+                    copiedMessage = copiedMessage.substring(0, copiedMessage.length() - shower.getName().length() - 1) + "§6@" + shower.getName().replace("@Everyone ", "§6@Everyone §r");
+                    chat0(shower, getFormat(), copiedMessage);
+                    showers.remove(shower);
+                    if (!hearers.contains(shower)) hearers.add(shower);
+                }
                     /* else if (message.equalsIgnoreCase("@" + shower.getName())) {
                         String copiedMessage = "§6@" + shower.getName();
                         chat0(shower, copiedMessage);
@@ -124,11 +154,19 @@ public abstract class UserEntity implements User {
                         if (!hearers.contains(shower)) hearers.add(shower);
                     }
                     */
-                    if (message.endsWith("@" + shower.getName())) {
-                        chat0(shower, getFormat(), message.substring(0, message.length() - shower.getName().length() - 1) + "§6@" + shower.getName());
-                        showers.remove(shower);
-                        if (!hearers.contains(shower)) hearers.add(shower);
-                    }
+
+            }
+            if (everyoneMessageFormatted) {
+                if (chattingColor != null) {
+                    message = chattingColor.applyWithMentionAll(message);
+                }
+                if (message.endsWith("@Everyone")) {
+                    message = message.substring(0, message.length() - 9) + "§6@Everyone";
+                }
+                message = message.replace("@Everyone ", "§6@Everyone §r");
+            } else {
+                if (chattingColor != null) {
+                    message = chattingColor.apply(message);
                 }
             }
             for (Player player : showers) {
@@ -136,9 +174,17 @@ public abstract class UserEntity implements User {
             }
             hearers.forEach(player -> player.playSound(player.getLocation(), Sound.ENTITY_CHICKEN_EGG, 1.0F, 1.0F));
         } else {
+            if (this instanceof PlayerUserEntity) {
+                if (chattingColor != null) {
+                    message = chattingColor.apply(message);
+                }
+            }
             for (UserEntity user : getCurrent().getUsers()) {
                 chat0(user.getSender(), getFormat(), message);
             }
+        }
+        if (this instanceof PlayerUserEntity) {
+            message = PlaceholderAPI.setPlaceholders(((PlayerUserEntity) this).getSender(), message);
         }
         Bukkit.getConsoleSender().sendMessage("§b[" + getCurrent().getDisplayName() + "§b] §r" + ConfigUtils.getChatFormat().replace("%message%", DynamicChatPlaceholder.replaceSender(sender, message)));
     }

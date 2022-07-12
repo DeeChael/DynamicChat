@@ -16,9 +16,17 @@ import net.deechael.dynamichat.temp.DynamicChatListener;
 import net.deechael.dynamichat.temp.NMSCommandKiller;
 import net.deechael.dynamichat.util.ConfigUtils;
 import net.deechael.dynamichat.util.Lang;
+import net.deechael.dynamichat.util.PlayerUtils;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class DyChatPlugin extends JavaPlugin {
 
@@ -146,6 +154,180 @@ public class DyChatPlugin extends JavaPlugin {
                             return 1;
                         }))))
         );
+        EzCommandManager.register("dynamichat", new EzCommand("chat-color", "dynamichat.command.chat-color", PermissionDefault.TRUE)
+                .executes((sender, helper) -> {
+                    Lang.send(sender, "command.chatcolor-gotohelp");
+                    return 1;
+                })
+                        .then(new EzCommand("help").executes((sender, helper) -> {
+                            Lang.send(sender, "command.chatcolor-help");
+                            return 1;
+                        }))
+                        .then(new EzCommand("reset").executes(((sender, helper) -> {
+                            if (sender instanceof Player player) {
+                                PlayerUtils.reset(player);
+                                Lang.send(sender, "command.chatcolor-reset-success");
+                            } else {
+                                Lang.send(sender, "command.mustbeplayer");
+                            }
+                            return 1;
+                        })))
+                .then(new EzCommand("set").executes((sender, helper) -> {
+                    Lang.send(sender, "command.chatcolor-gotohelp");
+                    return 1;
+                }).then(new EzCommand("color").then(new EzArgument(BaseArguments.string(), "color").executes((sender, helper) -> {
+                    if (sender instanceof Player player) {
+                        String colorString = helper.getAsString("color");
+                        if (colorString.length() == 1) {
+                            if (!ChatColor.ALL_CODES.contains(colorString)) {
+                                Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                            } else {
+                                net.deechael.dynamichat.util.ChatColor color = new net.deechael.dynamichat.util.ChatColor();
+                                color.addColor(ChatColor.getByChar(colorString.charAt(0)).getColor());
+                                PlayerUtils.setColor(player, color);
+                                Lang.send(sender, "command.chatcolor-set-success");
+                            }
+                        } else if (colorString.length() == 6) {
+                            if (!Pattern.matches("[a-fA-F0-9]{6}", colorString)) {
+                                Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                            } else {
+                                net.deechael.dynamichat.util.ChatColor color = new net.deechael.dynamichat.util.ChatColor();
+                                color.addColor(ChatColor.of("#" + colorString).getColor());
+                                PlayerUtils.setColor(player, color);
+                                Lang.send(sender, "command.chatcolor-set-success");
+                            }
+                        } else if (colorString.length() == 7) {
+                            if (!Pattern.matches("#([a-fA-F0-9]{6})", colorString)) {
+                                Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                            } else {
+                                net.deechael.dynamichat.util.ChatColor color = new net.deechael.dynamichat.util.ChatColor();
+                                color.addColor(ChatColor.of(colorString).getColor());
+                                PlayerUtils.setColor(player, color);
+                                Lang.send(sender, "command.chatcolor-set-success");
+                            }
+                        } else {
+                            Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                        }
+                    } else {
+                        Lang.send(sender, "command.mustbeplayer");
+                    }
+                    return 1;
+                })))
+                        .then(new EzCommand("gradient").then(new EzArgument(BaseArguments.string(), "from").then(new EzArgument(BaseArguments.string(), "to").executes((sender, helper) -> {
+                            if (sender instanceof Player player) {
+                                String from = helper.getAsString("from");
+                                String to = helper.getAsString("to");
+                                if (from.length() == 1) {
+                                    if (!ChatColor.ALL_CODES.contains(from)) {
+                                        Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                                    } else {
+                                        net.deechael.dynamichat.util.ChatColor color = new net.deechael.dynamichat.util.ChatColor();
+                                        color.addColor(ChatColor.getByChar(from.charAt(0)).getColor());
+                                        if (to.length() == 1) {
+                                            if (!ChatColor.ALL_CODES.contains(to)) {
+                                                Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                                            } else {
+                                                color.addColor(ChatColor.getByChar(to.charAt(0)).getColor());
+                                                PlayerUtils.setColor(player, color);
+                                                Lang.send(sender, "command.chatcolor-set-success");
+                                            }
+                                        } else if (to.length() == 6) {
+                                            if (!Pattern.matches("[a-fA-F0-9]{6}", to)) {
+                                                Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                                            } else {
+                                                color.addColor(ChatColor.of("#" + to).getColor());
+                                                PlayerUtils.setColor(player, color);
+                                                Lang.send(sender, "command.chatcolor-set-success");
+                                            }
+                                        } else if (to.length() == 7) {
+                                            if (!Pattern.matches("#([a-fA-F0-9]{6})", to)) {
+                                                Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                                            } else {
+                                                color.addColor(ChatColor.of(to).getColor());
+                                                PlayerUtils.setColor(player, color);
+                                                Lang.send(sender, "command.chatcolor-set-success");
+                                            }
+                                        } else {
+                                            Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                                        }
+                                    }
+                                } else if (from.length() == 6) {
+                                    if (!Pattern.matches("[a-fA-F0-9]{6}", from)) {
+                                        Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                                    } else {
+                                        net.deechael.dynamichat.util.ChatColor color = new net.deechael.dynamichat.util.ChatColor();
+                                        color.addColor(ChatColor.of("#" + from).getColor());
+                                        if (to.length() == 1) {
+                                            if (!ChatColor.ALL_CODES.contains(to)) {
+                                                Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                                            } else {
+                                                color.addColor(ChatColor.getByChar(to.charAt(0)).getColor());
+                                                PlayerUtils.setColor(player, color);
+                                                Lang.send(sender, "command.chatcolor-set-success");
+                                            }
+                                        } else if (to.length() == 6) {
+                                            if (!Pattern.matches("[a-fA-F0-9]{6}", to)) {
+                                                Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                                            } else {
+                                                color.addColor(ChatColor.of("#" + to).getColor());
+                                                PlayerUtils.setColor(player, color);
+                                                Lang.send(sender, "command.chatcolor-set-success");
+                                            }
+                                        } else if (to.length() == 7) {
+                                            if (!Pattern.matches("#([a-fA-F0-9]{6})", to)) {
+                                                Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                                            } else {
+                                                color.addColor(ChatColor.of(to).getColor());
+                                                PlayerUtils.setColor(player, color);
+                                                Lang.send(sender, "command.chatcolor-set-success");
+                                            }
+                                        } else {
+                                            Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                                        }
+                                    }
+                                } else if (from.length() == 7) {
+                                    if (!Pattern.matches("#([a-fA-F0-9]{6})", from)) {
+                                        Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                                    } else {
+                                        net.deechael.dynamichat.util.ChatColor color = new net.deechael.dynamichat.util.ChatColor();
+                                        color.addColor(ChatColor.of(from).getColor());
+                                        if (to.length() == 1) {
+                                            if (!ChatColor.ALL_CODES.contains(to)) {
+                                                Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                                            } else {
+                                                color.addColor(ChatColor.getByChar(to.charAt(0)).getColor());
+                                                PlayerUtils.setColor(player, color);
+                                                Lang.send(sender, "command.chatcolor-set-success");
+                                            }
+                                        } else if (to.length() == 6) {
+                                            if (!Pattern.matches("[a-fA-F0-9]{6}", to)) {
+                                                Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                                            } else {
+                                                color.addColor(ChatColor.of("#" + to).getColor());
+                                                PlayerUtils.setColor(player, color);
+                                                Lang.send(sender, "command.chatcolor-set-success");
+                                            }
+                                        } else if (to.length() == 7) {
+                                            if (!Pattern.matches("#([a-fA-F0-9]{6})", to)) {
+                                                Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                                            } else {
+                                                color.addColor(ChatColor.of(to).getColor());
+                                                PlayerUtils.setColor(player, color);
+                                                Lang.send(sender, "command.chatcolor-set-success");
+                                            }
+                                        } else {
+                                            Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                                        }
+                                    }
+                                } else {
+                                    Lang.send(sender, "command.chatcolor-set-unknowncolor");
+                                }
+                            } else {
+                                Lang.send(sender, "command.mustbeplayer");
+                            }
+                            return 1;
+                        })))))
+        );
         //EzCommandManager.register("dynamichat", new EzCommand("dynamicchat").redirect(mainCommand));
         //EzCommandManager.register("dynamichat", new EzCommand("dynamichat").redirect(mainCommand));
         //EzCommandManager.register("dynamichat", new EzCommand("dychat").redirect(mainCommand));
@@ -160,7 +342,6 @@ public class DyChatPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        ConfigUtils.save();
     }
 
 }

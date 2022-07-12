@@ -1,8 +1,38 @@
 package net.deechael.dynamichat.util;
 
+import net.deechael.useless.objs.DuObj;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public final class StringUtils {
 
     private StringUtils() {
+    }
+
+    public static String join(String spliter, List<String> strings) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < strings.size(); i++) {
+            builder.append(strings.get(i));
+            if (i < strings.size() - 1) {
+                builder.append(spliter);
+            }
+        }
+        return builder.toString();
+    }
+
+    public static String join(String spliter, String[] strings) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < strings.length; i++) {
+            builder.append(strings[i]);
+            if (i < strings.length - 1) {
+                builder.append(spliter);
+            }
+        }
+        return builder.toString();
     }
 
     public static String safePattern(String string) {
@@ -32,11 +62,21 @@ public final class StringUtils {
     }
 
     private static String multiply0(String string, int times) {
-        StringBuilder stringBuilder = new StringBuilder(string);
-        for (int i = 0; i < (times - 1); i++) {
-            stringBuilder.append(string);
-        }
-        return stringBuilder.toString();
+        return string + string.repeat(Math.max(0, (times - 1)));
+    }
+
+    public static DuObj<String[], String[]> split(String string, String regex) {
+        return split(string, Pattern.compile(regex));
+    }
+
+    public static DuObj<String[], String[]> split(String string, Pattern pattern) {
+        if (!Pattern.matches(".*" + pattern.pattern() + ".*", string))
+            return new DuObj<>(new String[] {string}, new String[0]);
+        Matcher matcher = pattern.matcher(string);
+        List<String> spliters = new ArrayList<>();
+        while (matcher.find())
+            spliters.add(matcher.group());
+        return new DuObj<>(pattern.split(string), spliters.toArray(new String[0]));
     }
 
 }

@@ -9,19 +9,18 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public final class UserChatEvent extends Event implements Cancellable {
+public final class CommandSayEvent extends Event implements Cancellable {
 
     private final static HandlerList handlerList = new HandlerList();
 
     private final User user;
     private final Channel channel;
-    private final String format;
-    private final String message;
     private final List<User> recipients;
+    private String format;
+    private String message;
     private boolean cancelled = false;
 
-    public UserChatEvent(User user, Channel channel, String format, String message, List<User> recipients) {
-        super(true);
+    public CommandSayEvent(User user, Channel channel, String format, String message, List<User> recipients) {
         this.user = user;
         this.channel = channel;
         this.format = format;
@@ -31,6 +30,10 @@ public final class UserChatEvent extends Event implements Cancellable {
 
     public static HandlerList getHandlerList() {
         return handlerList;
+    }
+
+    public List<User> getRecipients() {
+        return recipients;
     }
 
     public User getUser() {
@@ -45,18 +48,16 @@ public final class UserChatEvent extends Event implements Cancellable {
         return format;
     }
 
+    public void setFormat(String format) {
+        this.format = format;
+    }
+
     public String getMessage() {
         return message;
     }
 
-    public List<User> getRecipients() {
-        return recipients;
-    }
-
-    @NotNull
-    @Override
-    public HandlerList getHandlers() {
-        return handlerList;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     @Override
@@ -68,5 +69,12 @@ public final class UserChatEvent extends Event implements Cancellable {
     public void setCancelled(boolean cancelled) {
         this.cancelled = cancelled;
     }
+
+    @NotNull
+    @Override
+    public HandlerList getHandlers() {
+        return handlerList;
+    }
+
 
 }

@@ -3,14 +3,24 @@ package net.deechael.dynamichat.util;
 import net.deechael.useless.objs.DuObj;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class StringUtils {
 
     private StringUtils() {
+    }
+
+    public static String random64() {
+        StringBuilder builder = new StringBuilder();
+        char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_".toCharArray();
+        Random random = new Random();
+        for (int i = 0; i < 64; i++) {
+            builder.append(chars[random.nextInt(chars.length)]);
+        }
+        return builder.toString();
     }
 
     public static String join(String spliter, List<String> strings) {
@@ -71,12 +81,16 @@ public final class StringUtils {
 
     public static DuObj<String[], String[]> split(String string, Pattern pattern) {
         if (!Pattern.matches(".*" + pattern.pattern() + ".*", string))
-            return new DuObj<>(new String[] {string}, new String[0]);
+            return new DuObj<>(new String[]{string}, new String[0]);
         Matcher matcher = pattern.matcher(string);
         List<String> spliters = new ArrayList<>();
         while (matcher.find())
             spliters.add(matcher.group());
         return new DuObj<>(pattern.split(string), spliters.toArray(new String[0]));
+    }
+
+    public static boolean startsWith(String string, Pattern pattern) {
+        return Pattern.matches(pattern.pattern() + ".*", string);
     }
 
 }

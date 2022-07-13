@@ -4,7 +4,9 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import net.deechael.dynamichat.api.Channel;
 import net.deechael.dynamichat.api.ChatManager;
 import net.deechael.dynamichat.api.User;
+import net.deechael.dynamichat.event.CommandSayEvent;
 import net.deechael.dynamichat.event.UserChatEvent;
+import net.deechael.dynamichat.event.WhisperEvent;
 import net.deechael.dynamichat.feature.Filter;
 import net.deechael.dynamichat.placeholder.DynamicChatPlaceholder;
 import net.deechael.dynamichat.util.*;
@@ -15,6 +17,7 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -36,12 +39,186 @@ public abstract class UserEntity implements User {
 
     @Override
     public void whisper(User another, String message) {
-
+        if (ConfigUtils.filterEnable()) {
+            if (ConfigUtils.filterMode() == Filter.Mode.CANCEL) {
+                if (Filter.suit(message)) {
+                    UserChatEvent event = new UserChatEvent(this, getCurrent(), getFormat(), message, new ArrayList<>());
+                    Bukkit.getPluginManager().callEvent(event);
+                    if (event.isCancelled()) {
+                        return;
+                    }
+                    Lang.send(sender, "message.filter-cancel");
+                    sender.spigot().sendMessage(new ComponentBuilder(Lang.lang(sender, "message.filter-cancel-edit-button"))
+                            .event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, message)).event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(Lang.lang(sender, "message.filter-cancel-edit-button-hover")))).create());
+                    return;
+                }
+            } else {
+                message = Filter.set(message);
+            }
+        }
+        if (ConfigUtils.replaceEnable()) {
+            for (Map.Entry<String, String> replace : ConfigUtils.replaces().entrySet()) {
+                message = message.replace(replace.getKey(), replace.getValue());
+            }
+        }
+        if (ConfigUtils.chatColorEnable()) {
+            message = ColorUtils.processChatColor(message);
+        }
+        if (ConfigUtils.chatColorGradient()) {
+            message = ColorUtils.processGradientColor(message);
+        }
+        WhisperEvent event = new WhisperEvent(this, another, message);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return;
+        }
+        message = event.getMessage();
+        this.getSender().sendMessage(DynamicChatPlaceholder.replaceReceiver(((UserEntity) another).getSender(), ConfigUtils.getWhisperSend()).replace("%message%", message));
+        ((UserEntity) another).getSender().sendMessage(DynamicChatPlaceholder.replaceSender(this.getSender(), ConfigUtils.getWhisperReceive()).replace("%message%", message));
+        if (ConfigUtils.whisperSound()) {
+            CommandSender s = ((UserEntity) another).getSender();
+            if (s instanceof Player player) {
+                player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0f, 1.0f);
+            }
+        }
     }
 
     @Override
     public void say(String message) {
+        ChatColor chattingColor = null;
+        if (this instanceof PlayerUserEntity) {
+            if (ConfigUtils.chatColorChangeable()) {
+                chattingColor = PlayerUtils.color(((PlayerUserEntity) this).getSender());
+            }
+        }
+        if (ConfigUtils.filterEnable()) {
+            if (ConfigUtils.filterMode() == Filter.Mode.CANCEL) {
+                if (Filter.suit(message)) {
+                    UserChatEvent event = new UserChatEvent(this, getCurrent(), getFormat(), message, new ArrayList<>());
+                    Bukkit.getPluginManager().callEvent(event);
+                    if (event.isCancelled()) {
+                        return;
+                    }
+                    Lang.send(sender, "message.filter-cancel");
+                    sender.spigot().sendMessage(new ComponentBuilder(Lang.lang(sender, "message.filter-cancel-edit-button"))
+                            .event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, message)).event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(Lang.lang(sender, "message.filter-cancel-edit-button-hover")))).create());
+                    return;
+                }
+            } else {
+                message = Filter.set(message);
+            }
+        }
+        if (ConfigUtils.replaceEnable()) {
+            for (Map.Entry<String, String> replace : ConfigUtils.replaces().entrySet()) {
+                message = message.replace(replace.getKey(), replace.getValue());
+            }
+        }
+        if (ConfigUtils.chatColorEnable()) {
+            message = ColorUtils.processChatColor(message);
+        }
+        if (ConfigUtils.chatColorGradient()) {
+            message = ColorUtils.processGradientColor(message);
+        }
+        List<Player> showers = new ArrayList<>(Bukkit.getOnlinePlayers());
+        CommandSayEvent event = new CommandSayEvent(this, getCurrent(), ConfigUtils.getSayFormat(), message, new ArrayList<>(showers).stream().map(player -> ChatManager.getManager().getPlayerUser(player)).collect(Collectors.toList()));
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return;
+        }
+        String format = event.getFormat();
+        message = event.getMessage();
+        showers.clear();
+        showers.addAll(event.getRecipients().stream().map(user -> ((PlayerUserEntity) user).getSender()).toList());
+        if (ConfigUtils.mentionPlayer()) {
+            List<Player> hearers = new ArrayList<>();
+            boolean everyoneMessageFormatted = false;
+            if (message.contains("@Everyone ")) {
+                everyoneMessageFormatted = true;
+                hearers.addAll(showers);
+            }/* else if (message.equalsIgnoreCase("@Everyone")) {
+                message = "§6@Everyone";
+                hearers.addAll(showers);
+                everyone = true;
+            } */
+            if (message.endsWith("@Everyone")) {
+                everyoneMessageFormatted = true;
+                hearers.clear();
+                hearers.addAll(showers);
+            }
+            for (Player shower : new ArrayList<>(showers)) {
+                if (shower.getName().equalsIgnoreCase("Everyone")) continue;
+                if (message.contains("@" + shower.getName() + " ")) {
+                    String copiedMessage = message;
+                    if (everyoneMessageFormatted) {
+                        if (chattingColor != null) {
+                            copiedMessage = chattingColor.applyWithMentionPlayerAndAll(copiedMessage, shower);
+                        }
+                    } else {
+                        if (chattingColor != null) {
+                            copiedMessage = chattingColor.applyWithMention(copiedMessage, shower);
+                        }
+                    }
+                    copiedMessage = copiedMessage.replace("@" + shower.getName() + " ", "§6@" + shower.getName() + " §r").replace("@Everyone ", "§6@Everyone §r");
+                    if (copiedMessage.endsWith("@Everyone")) {
+                        copiedMessage = copiedMessage.substring(0, copiedMessage.length() - 9) + "§6@Everyone";
+                    } else if (copiedMessage.endsWith("@" + shower.getName())) {
+                        copiedMessage = copiedMessage.substring(0, copiedMessage.length() - shower.getName().length() - 1) + "§6@" + shower.getName();
+                    }
+                    chat0(shower, format, copiedMessage);
+                    showers.remove(shower);
+                    if (!hearers.contains(shower)) hearers.add(shower);
+                } else if (message.endsWith("@" + shower.getName())) {
+                    String copiedMessage = message;
+                    if (everyoneMessageFormatted) {
+                        if (chattingColor != null) {
+                            copiedMessage = chattingColor.applyWithMentionPlayerAndAll(copiedMessage, shower);
+                        }
+                    } else {
+                        if (chattingColor != null) {
+                            copiedMessage = chattingColor.applyWithMention(copiedMessage, shower);
+                        }
+                    }
+                    copiedMessage = copiedMessage.substring(0, copiedMessage.length() - shower.getName().length() - 1) + "§6@" + shower.getName().replace("@Everyone ", "§6@Everyone §r");
+                    chat0(shower, format, copiedMessage);
+                    showers.remove(shower);
+                    if (!hearers.contains(shower)) hearers.add(shower);
+                }
+                    /* else if (message.equalsIgnoreCase("@" + shower.getName())) {
+                        String copiedMessage = "§6@" + shower.getName();
+                        chat0(shower, copiedMessage);
+                        showers.remove(shower);
+                        if (!hearers.contains(shower)) hearers.add(shower);
+                    }
+                    */
 
+            }
+            if (everyoneMessageFormatted) {
+                if (chattingColor != null) {
+                    message = chattingColor.applyWithMentionAll(message);
+                }
+                if (message.endsWith("@Everyone")) {
+                    message = message.substring(0, message.length() - 9) + "§6@Everyone";
+                }
+                message = message.replace("@Everyone ", "§6@Everyone §r");
+            } else {
+                if (chattingColor != null) {
+                    message = chattingColor.apply(message);
+                }
+            }
+            for (Player player : showers) {
+                chat0(player, format, message);
+            }
+            hearers.forEach(player -> player.playSound(player.getLocation(), Sound.ENTITY_CHICKEN_EGG, 1.0F, 1.0F));
+        } else {
+            if (this instanceof PlayerUserEntity) {
+                if (chattingColor != null) {
+                    message = chattingColor.apply(message);
+                }
+            }
+            for (Player shower : showers) {
+                chat0(shower, format, message);
+            }
+        }
     }
 
     @Override
@@ -78,22 +255,26 @@ public abstract class UserEntity implements User {
         if (ConfigUtils.chatColorGradient()) {
             message = ColorUtils.processGradientColor(message);
         }
-        if (ConfigUtils.mentionPlayer()) {
-            List<Player> showers = new ArrayList<>();
-            if (ConfigUtils.channelEnable()) {
-                for (UserEntity user : getCurrent().getUsers()) {
-                    if (user instanceof PlayerUserEntity) {
-                        showers.add((Player) user.getSender());
-                    }
+        List<Player> showers = new ArrayList<>();
+        if (ConfigUtils.channelEnable()) {
+            for (UserEntity user : getCurrent().getUsers()) {
+                if (user instanceof PlayerUserEntity) {
+                    showers.add((Player) user.getSender());
                 }
-            } else {
-                showers.addAll(Bukkit.getOnlinePlayers());
             }
-            UserChatEvent event = new UserChatEvent(this, getCurrent(), getFormat(), message, new ArrayList<>(showers).stream().map(player -> ChatManager.getManager().getPlayerUser(player)).collect(Collectors.toList()));
-            Bukkit.getPluginManager().callEvent(event);
-            if (event.isCancelled()) {
-                return;
-            }
+        } else {
+            showers.addAll(Bukkit.getOnlinePlayers());
+        }
+        UserChatEvent event = new UserChatEvent(this, getCurrent(), getFormat(), message, new ArrayList<>(showers).stream().map(player -> ChatManager.getManager().getPlayerUser(player)).collect(Collectors.toList()));
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return;
+        }
+        String format = event.getFormat();
+        message = event.getMessage();
+        showers.clear();
+        showers.addAll(event.getRecipients().stream().map(user -> ((PlayerUserEntity) user).getSender()).toList());
+        if (ConfigUtils.mentionPlayer()) {
             List<Player> hearers = new ArrayList<>();
             boolean everyoneMessageFormatted = false;
             if (message.contains("@Everyone ")) {
@@ -128,7 +309,7 @@ public abstract class UserEntity implements User {
                     } else if (copiedMessage.endsWith("@" + shower.getName())) {
                         copiedMessage = copiedMessage.substring(0, copiedMessage.length() - shower.getName().length() - 1) + "§6@" + shower.getName();
                     }
-                    chat0(shower, getFormat(), copiedMessage);
+                    chat0(shower, format, copiedMessage);
                     showers.remove(shower);
                     if (!hearers.contains(shower)) hearers.add(shower);
                 } else if (message.endsWith("@" + shower.getName())) {
@@ -143,7 +324,7 @@ public abstract class UserEntity implements User {
                         }
                     }
                     copiedMessage = copiedMessage.substring(0, copiedMessage.length() - shower.getName().length() - 1) + "§6@" + shower.getName().replace("@Everyone ", "§6@Everyone §r");
-                    chat0(shower, getFormat(), copiedMessage);
+                    chat0(shower, format, copiedMessage);
                     showers.remove(shower);
                     if (!hearers.contains(shower)) hearers.add(shower);
                 }
@@ -170,7 +351,7 @@ public abstract class UserEntity implements User {
                 }
             }
             for (Player player : showers) {
-                chat0(player, getFormat(), message);
+                chat0(player, format, message);
             }
             hearers.forEach(player -> player.playSound(player.getLocation(), Sound.ENTITY_CHICKEN_EGG, 1.0F, 1.0F));
         } else {
@@ -179,14 +360,14 @@ public abstract class UserEntity implements User {
                     message = chattingColor.apply(message);
                 }
             }
-            for (UserEntity user : getCurrent().getUsers()) {
-                chat0(user.getSender(), getFormat(), message);
+            for (Player player : showers) {
+                chat0(player, format, message);
             }
         }
         if (this instanceof PlayerUserEntity) {
             message = PlaceholderAPI.setPlaceholders(((PlayerUserEntity) this).getSender(), message);
         }
-        Bukkit.getConsoleSender().sendMessage("§b[" + getCurrent().getDisplayName() + "§b] §r" + ConfigUtils.getChatFormat().replace("%message%", DynamicChatPlaceholder.replaceSender(sender, message)));
+        Bukkit.getConsoleSender().sendMessage(DynamicChatPlaceholder.replaceSender(sender, "§b[" + getCurrent().getDisplayName() + "§b] §r" + ConfigUtils.getChatFormat().replace("%message%", message)));
     }
 
     public String getFormat() {

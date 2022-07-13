@@ -33,7 +33,9 @@ public final class ConfigUtils {
             }
         }
         configuration = YamlConfiguration.loadConfiguration(configFile);
+        setDefault(configuration, "bungee-proxy", false);
         setDefault(configuration, "mention-player", false);
+        setDefault(configuration, "whisper-sound", false);
         setDefault(configuration, "channel.enable", false);
         setDefault(configuration, "channel.global-name", "Global");
         setDefault(configuration, "chat-color.enable", false);
@@ -64,22 +66,29 @@ public final class ConfigUtils {
         }
         languageConfiguration = YamlConfiguration.loadConfiguration(languageFile);
         setDefault(languageConfiguration, "command.gotohelp", "&c&l(!) &r&cPlease type \"/dynamic-chat help\" to get help!");
-        setDefault(languageConfiguration, "command.mustbeplayer", "&c&l(!) &r&cYou must be a player to use this command");
+        setDefault(languageConfiguration, "command.mustbeplayer", "&c&l(!) &r&cYou must be a player to use this command!");
         setDefault(languageConfiguration, "command.main-help", Arrays.asList("&6&l==============================", "&e/dynamic-chat help - get help", "&e/dynamic-chat reload - reload configuration", "&6&l=============================="));
-        setDefault(languageConfiguration, "command.main-reload-success", "&a&l(!) &r&aReloaded configuration successfully");
+        setDefault(languageConfiguration, "command.main-reload-success", "&a&l(!) &r&aReloaded configuration successfully!");
         setDefault(languageConfiguration, "command.channel-gotohelp", "&c&l(!) &rPlease type \"/dynamic-chat help\" to get help!");
         setDefault(languageConfiguration, "command.channel-help", Arrays.asList("&6&l==============================", "&e/channel help - get help", "&e/channel switch <channel> - switch channel", "&6&l=============================="));
-        setDefault(languageConfiguration, "command.channel-notexists", "&c&l(!) &r&cThe channel not exists");
-        setDefault(languageConfiguration, "command.channel-switch-success", "&a&l(!) &r&aYou switch channel to &b{0}");
-        setDefault(languageConfiguration, "command.channel-notavailable", "&c&l(!) &r&cYou have no access to &f{0}");
+        setDefault(languageConfiguration, "command.channel-notexists", "&c&l(!) &r&cThe channel not exists!");
+        setDefault(languageConfiguration, "command.channel-switch-success", "&a&l(!) &r&aYou switch channel to &b{0}&a!");
+        setDefault(languageConfiguration, "command.channel-notavailable", "&c&l(!) &r&cYou have no access to &f{0}&c!");
         setDefault(languageConfiguration, "command.chatcolor-gotohelp", "&c&l(!) &rPlease type \"/chat-color help\" to get help!");
         setDefault(languageConfiguration, "command.chatcolor-help", Arrays.asList("&6&l==============================", "&e/chat-color help - get help", "&e/chat-color set color <color> - set the color", "&e/chat-color set gradient <from> <to> - set the gradient color", "&6&l=============================="));
-        setDefault(languageConfiguration, "command.chatcolor-set-success", "&a&l(!) &r&aYou set the chat color successfully");
-        setDefault(languageConfiguration, "command.chatcolor-set-unknowncolor", "&c&l(!) &r&cYou type a wrong color format");
-        setDefault(languageConfiguration, "command.chatcolor-reset-success", "&a&l(!) &r&aYou reset the chat color successfully");
-        setDefault(languageConfiguration, "message.filter-cancel", "&c&l(!) &r&cThere are some illegal words");
+        setDefault(languageConfiguration, "command.chatcolor-set-success", "&a&l(!) &r&aYou set the chat color successfully!");
+        setDefault(languageConfiguration, "command.chatcolor-set-unknowncolor", "&c&l(!) &r&cYou type a wrong color format!");
+        setDefault(languageConfiguration, "command.chatcolor-reset-success", "&a&l(!) &r&aYou reset the chat color successfully!");
+        setDefault(languageConfiguration, "command.message.cannotlocate", "&c&l(!) &r&cCannot locate the message!");
+        setDefault(languageConfiguration, "command.message.unknownbutton", "&c&l(!) &r&cCannot invoke the button!");
+        setDefault(languageConfiguration, "message.filter-cancel", "&c&l(!) &r&cThere are some illegal words!");
         setDefault(languageConfiguration, "message.filter-cancel-edit-button", "&e&l[Click to edit]");
-        setDefault(languageConfiguration, "message.filter-cancel-edit-button-hover", "&b&lClick here to edit!");
+        setDefault(languageConfiguration, "message.filter-cancel-edit-button-hover", "&b&lClick here to edit");
+        setDefault(languageConfiguration, "message.hover", "&b&lClick here to show options");
+        setDefault(languageConfiguration, "message.button.copy.display", "&a&l[&r&aCopy Message&a&l]");
+        setDefault(languageConfiguration, "message.button.copy.hover", "&b&lClick here to copy the message");
+        //setDefault(languageConfiguration, "message.button.copy.message", "&a&l(!) &r&cYou copied the message successfully!");
+        setDefault(languageConfiguration, "gui.main.title", "&c&lDynamicChat Chat Management");
         save();
     }
 
@@ -110,6 +119,12 @@ public final class ConfigUtils {
     public static boolean mentionPlayer() {
         check();
         return configuration.getBoolean("mention-player");
+    }
+
+
+    public static boolean whisperSound() {
+        check();
+        return configuration.getBoolean("whisper-sound");
     }
 
     public static boolean languageFollowClient() {
@@ -239,6 +254,21 @@ public final class ConfigUtils {
     public static String getChatFormat() {
         check();
         return configuration.getString("message-format.chat");
+    }
+
+    public static String getWhisperSend() {
+        check();
+        return configuration.getString("message-format.whisper.send");
+    }
+
+    public static String getWhisperReceive() {
+        check();
+        return configuration.getString("message-format.whisper.receive");
+    }
+
+    public static String getSayFormat() {
+        check();
+        return configuration.getString("message-format.say-command");
     }
 
     public static String channelMessageFormat() {

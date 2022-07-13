@@ -14,8 +14,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -48,6 +46,12 @@ public class NormalGUI implements Listener {
         if (isDropped()) throw new RuntimeException("This GUI has been dropped!");
         if (!hasItem(slot)) throw new RuntimeException("The slot is empty");
         return inputs.get(slot);
+    }
+
+    public void fill(Slot input) {
+        for (int i = 0; i < this.type.getSlots(); i++) {
+            setItem(i, input);
+        }
     }
 
     public void setItem(int slot, Slot input) {

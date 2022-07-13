@@ -61,10 +61,26 @@ public final class AnvilGUI implements Listener {
 
     public void setItem(AnvilSlot slot, Slot input) {
         if (isDropped()) return;
+        if (slot == AnvilSlot.OUTPUT) {
+            if (input instanceof AnvilOutputSlot anvilOutputSlot) {
+                setOutput(anvilOutputSlot);
+            }
+            return;
+        }
         inputs.put(slot.getSlot(), input);
         for (Map.Entry<Player, Inventory> entry : cache.entrySet()) {
             if (input instanceof Image image) {
                 entry.getValue().setItem(slot.getSlot(), image.draw(entry.getKey(), entry.getValue()));
+            }
+        }
+    }
+
+    public void setOutput(AnvilOutputSlot input) {
+        if (isDropped()) return;
+        inputs.put(2, input);
+        for (Map.Entry<Player, Inventory> entry : cache.entrySet()) {
+            if (input instanceof AnvilOutputImage image) {
+                entry.getValue().setItem(2, image.draw(entry.getKey(), entry.getValue(), entry.getValue().getItem(2)));
             }
         }
     }
@@ -88,10 +104,16 @@ public final class AnvilGUI implements Listener {
             constructor.setAccessible(true);
             AnvilInterface anvil = (AnvilInterface) constructor.newInstance(player);
             Inventory inventory = anvil.castToBukkit();
-            for (int i : inputs.keySet()) {
+            for (int i = 0; i < 3; i++) {
                 Slot input = inputs.get(i);
+                if (input == null)
+                    continue;
                 if (input instanceof Image image) {
                     inventory.setItem(i, image.draw(player, inventory));
+                } else if (input instanceof AnvilOutputImage image) {
+                    if (inputs.containsKey(0)) {
+                        inventory.setItem(2, image.draw(player, inventory, inventory.getItem(0)));
+                    }
                 }
             }
             anvil.open(title);
@@ -120,8 +142,8 @@ public final class AnvilGUI implements Listener {
             if (event.getView().getTopInventory().equals(cache.get(player))) {
                 if (inputs.containsKey(2)) {
                     Slot input = inputs.get(2);
-                    if (input instanceof Image image) {
-                        event.setResult(image.draw(player, event.getView().getTopInventory()));
+                    if (input instanceof AnvilOutputImage image) {
+                        event.setResult(image.draw(player, event.getView().getTopInventory(), event.getResult()));
                     }
                 }
             }
@@ -167,6 +189,9 @@ public final class AnvilGUI implements Listener {
                                         event.getClickedInventory().setItem(event.getRawSlot(), storageItem);
                                     }
                                 }
+                            } else if (input instanceof AnvilOutputClicker clicker) {
+                                Inventory inventory = event.getView().getTopInventory();
+                                clicker.click(player, inventory, inventory.getItem(2), event.getClick(), event.getAction());
                             }
                         }
                     }
@@ -351,7 +376,8 @@ public final class AnvilGUI implements Listener {
             openToPlayer.setOthersFieldValue(entityPlayer, "activeContainer", Var.thisVar());
         }
         if (Ref.getVersion() >= 17) {
-            openToPlayer.invokeThisMethod("a", entityPlayer);
+            openToPlayer.invokeMethod(entityPlayer, "a", Var.thisVar());
+            //openToPlayer.invokeThisMethod("a", entityPlayer);
         } else {
             openToPlayer.invokeThisMethod("addSlotListener", entityPlayer);
         }

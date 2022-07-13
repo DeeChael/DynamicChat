@@ -20,6 +20,10 @@ public final class ChannelSwitchEvent extends Event {
         this.to = to;
     }
 
+    public static HandlerList getHandlerList() {
+        return handlerList;
+    }
+
     public User getUser() {
         return user;
     }
@@ -35,10 +39,6 @@ public final class ChannelSwitchEvent extends Event {
     @NotNull
     @Override
     public HandlerList getHandlers() {
-        return handlerList;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlerList;
     }
 

@@ -12,6 +12,9 @@ import java.util.List;
 
 public final class PlayerUtils {
 
+    private PlayerUtils() {
+    }
+
     public static void reload() {
     }
 
@@ -42,7 +45,7 @@ public final class PlayerUtils {
         return null;
     }
 
-    public static void setColor(Player player, ChatColor color) {
+    public static void setColor(Player player, List<String> colors) {
         File playerFile = new File(new File(DyChatPlugin.getInstance().getDataFolder(), "players"), player.getUniqueId() + ".yml");
         if (!playerFile.exists()) {
             try {
@@ -52,10 +55,8 @@ public final class PlayerUtils {
         }
         FileConfiguration configuration = YamlConfiguration.loadConfiguration(playerFile);
         StringBuilder colorString = new StringBuilder();
-        List<Color> colors = color.colors();
         for (int i = 0; i < colors.size(); i++) {
-            colorString.append(String.format("%08x", colors.get(i).getRGB()).substring(2));
-            if (i < colors.size() -1) {
+            if (i < colors.size() - 1) {
                 colorString.append(",");
             }
         }
@@ -88,7 +89,5 @@ public final class PlayerUtils {
         }
         return null;
     }
-
-    private PlayerUtils() {}
 
 }

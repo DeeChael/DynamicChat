@@ -2,7 +2,10 @@ package net.deechael.dynamichat.entity;
 
 import net.deechael.dynamichat.api.Channel;
 import net.deechael.dynamichat.api.ChatManager;
+import net.deechael.dynamichat.api.Message;
+import net.deechael.dynamichat.api.MessageButton;
 import net.deechael.dynamichat.util.ConfigUtils;
+import net.deechael.dynamichat.util.StringUtils;
 import net.deechael.useless.objs.FiObj;
 import net.deechael.useless.objs.TriObj;
 import org.bukkit.Bukkit;
@@ -22,6 +25,10 @@ public class DynamicChatManager extends ChatManager {
     private final List<TemporaryChannelEntity> temps = new ArrayList<>();
     private final ChannelEntity global = new GlobalChannelEntity();
 
+    private final Map<String, Message> chatCaches = new HashMap<>();
+
+    private final Map<Integer, MessageButton> buttons = new HashMap<>();
+
     public DynamicChatManager() {
         global.setDisplayName(ConfigUtils.globalChannelDisplayName());
     }
@@ -32,6 +39,19 @@ public class DynamicChatManager extends ChatManager {
 
     public static DynamicChatManager getChatManager() {
         return (DynamicChatManager) ChatManager.getManager();
+    }
+
+    public static String addChatCache(Message builder) {
+        String key = StringUtils.random64();
+        while (getChatManager().chatCaches.containsKey(key)) {
+            key = StringUtils.random64();
+        }
+        getChatManager().chatCaches.put(key, builder);
+        return key;
+    }
+
+    public static Message getChatCache(String key) {
+        return getChatManager().chatCaches.get(key);
     }
 
     public static void reload() {
@@ -134,6 +154,29 @@ public class DynamicChatManager extends ChatManager {
         TemporaryChannelEntity channel = new TemporaryChannelEntity(displayName, format);
         this.temps.add(channel);
         return channel;
+    }
+
+    @Override
+    public void registerButton(int index, MessageButton button) {
+        if (this.buttons.containsKey(index))
+            throw new RuntimeException("This is index has been registered");
+        this.buttons.put(index, button);
+    }
+
+    @Override
+    public Map<Integer, MessageButton> getButtons() {
+        return new HashMap<>(buttons);
+    }
+
+    @Override
+    public int getButtonMaxIndex() {
+        int index = -1;
+        for (int i : buttons.keySet()) {
+            if (i > index) {
+                index = i;
+            }
+        }
+        return index;
     }
 
 }

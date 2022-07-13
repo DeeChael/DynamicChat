@@ -179,4 +179,14 @@ public class DynamicChatManager extends ChatManager {
         return index;
     }
 
+    @Override
+    public boolean languageFollowClient() {
+        return ConfigUtils.languageFollowClient();
+    }
+
+    @Override
+    public String getDefaultLanguage() {
+        return ConfigUtils.lang();
+    }
+
 }

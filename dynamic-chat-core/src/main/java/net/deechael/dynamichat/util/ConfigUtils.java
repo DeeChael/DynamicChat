@@ -75,7 +75,7 @@ public final class ConfigUtils {
         setDefault(languageConfiguration, "command.channel-switch-success", "&a&l(!) &r&aYou switch channel to &b{0}&a!");
         setDefault(languageConfiguration, "command.channel-notavailable", "&c&l(!) &r&cYou have no access to &f{0}&c!");
         setDefault(languageConfiguration, "command.chatcolor-gotohelp", "&c&l(!) &rPlease type \"/chat-color help\" to get help!");
-        setDefault(languageConfiguration, "command.chatcolor-help", Arrays.asList("&6&l==============================", "&e/chat-color help - get help", "&e/chat-color set color <color> - set the color", "&e/chat-color set gradient <from> <to> - set the gradient color", "&6&l=============================="));
+        setDefault(languageConfiguration, "command.chatcolor-help", Arrays.asList("&6&l==============================", "&e/chat-color help - get help", "&e/chat-color set color <color> - set the color", "&e/chat-color set gradient <from> <to> - set the gradient color", "&e/chat-color reset - reset the chat color", "&6&l=============================="));
         setDefault(languageConfiguration, "command.chatcolor-set-success", "&a&l(!) &r&aYou set the chat color successfully!");
         setDefault(languageConfiguration, "command.chatcolor-set-unknowncolor", "&c&l(!) &r&cYou type a wrong color format!");
         setDefault(languageConfiguration, "command.chatcolor-reset-success", "&a&l(!) &r&aYou reset the chat color successfully!");

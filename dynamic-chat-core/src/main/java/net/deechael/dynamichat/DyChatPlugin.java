@@ -426,15 +426,6 @@ public class DyChatPlugin extends JavaPlugin {
                         )
                 ))
         );
-        //EzCommandManager.register("dynamichat", new EzCommand("dynamicchat").redirect(mainCommand));
-        //EzCommandManager.register("dynamichat", new EzCommand("dynamichat").redirect(mainCommand));
-        //EzCommandManager.register("dynamichat", new EzCommand("dychat").redirect(mainCommand));
-        //EzCommandManager.register("dynamichat", new EzCommand("dchat").redirect(mainCommand));
-        //EzCommandManager.register("dynamichat", new EzCommand("dc").redirect(mainCommand));
-        //EzCommandManager.register("dynamichat", new EzCommand("dy-chat").redirect(mainCommand));
-        //EzCommandManager.register("dynamichat", new EzCommand("dee-chat").redirect(mainCommand));
-        //EzCommandManager.register("dynamichat", new EzCommand("deechat").redirect(mainCommand));
-        //EzCommandManager.register("dynamichat", new EzCommand("deechaelchat").redirect(mainCommand));
         NMSCommandKiller.kill(this);
     }
 

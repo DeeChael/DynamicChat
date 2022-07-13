@@ -1,0 +1,6 @@
+name: DynamicChat-BlackList
+main: net.deechael.dynamichat.extension.blacklist.DyChatBlackListExtensionPlugin
+author: DeeChael
+version: 1.00.0
+api-version: 1.19
+depend: [DynamicChat]

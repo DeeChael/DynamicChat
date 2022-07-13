@@ -1,4 +1,5 @@
 rootProject.name = 'dynamic-chat'
 include 'dynamic-chat-api'
 include 'dynamic-chat-core'
+include 'dynamic-chat-extension-blacklist'
 

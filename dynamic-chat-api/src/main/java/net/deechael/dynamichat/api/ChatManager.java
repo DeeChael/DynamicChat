@@ -42,4 +42,8 @@ public abstract class ChatManager {
 
     public abstract int getButtonMaxIndex();
 
+    public abstract boolean languageFollowClient();
+
+    public abstract String getDefaultLanguage();
+
 }

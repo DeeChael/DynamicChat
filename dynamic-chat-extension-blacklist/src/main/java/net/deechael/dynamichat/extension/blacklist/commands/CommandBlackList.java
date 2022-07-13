@@ -1,0 +1,94 @@
+package net.deechael.dynamichat.extension.blacklist.commands;
+
+import net.deechael.dynamichat.extension.blacklist.BlackListManager;
+import net.deechael.dynamichat.extension.blacklist.Lang;
+import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public final class CommandBlackList extends Command {
+
+    public CommandBlackList() {
+        super("blacklist");
+    }
+
+    @NotNull
+    @Override
+    public List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
+        List<String> list = new ArrayList<>();
+        if (sender instanceof Player player) {
+            if (args.length == 1) {
+                list.add("help");
+                list.add("add");
+                list.add("remove");
+            } else if (args.length == 2) {
+                if (args[0].equalsIgnoreCase("add")) {
+                    Bukkit.getOnlinePlayers().stream().map(HumanEntity::getName).forEach(list::add);
+                    list.remove(sender.getName());
+                } else if (args[0].equalsIgnoreCase("remove")) {
+                    list.addAll(BlackListManager.getBlacked(player));
+                } else {
+                    list.add(" ");
+                }
+            } else {
+                list.add(" ");
+            }
+        } else {
+            list.add(" ");
+        }
+        return list;
+    }
+
+    @Override
+    public boolean execute(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) {
+        if (!(sender instanceof Player player)) {
+            Lang.sendConsole(sender, "command.mustbeplayer");
+            return true;
+        }
+        if (args.length == 1) {
+            if (args[0].equalsIgnoreCase("help")) {
+                Lang.send(player, "command.blacklist.help");
+            } else if (args[0].equalsIgnoreCase("list")) {
+                // TODO
+            } else {
+                Lang.send(player, "command.blacklist.gotohelp");
+            }
+        } else if (args.length == 2) {
+            if (args[0].equalsIgnoreCase("add")) {
+                if (player.getName().equalsIgnoreCase(args[1])) {
+                    Lang.send(player, "command.blacklist.notself");
+                } else {
+                    if (BlackListManager.getBlacked(player).contains(args[1].toLowerCase())) {
+                        Lang.send(player, "command.blacklist.add.alreadyin", args[1]);
+                    } else {
+                        BlackListManager.add(player, args[1].toLowerCase());
+                        Lang.send(player, "command.blacklist.add.success", args[1]);
+                    }
+                }
+            } else if (args[0].equalsIgnoreCase("remove")) {
+                if (player.getName().equalsIgnoreCase(args[1])) {
+                    Lang.send(player, "command.blacklist.selfnot");
+                } else {
+                    if (!BlackListManager.getBlacked(player).contains(args[1].toLowerCase())) {
+                        Lang.send(player, "command.blacklist.remove.notin", args[1]);
+                    } else {
+                        BlackListManager.remove(player, args[1].toLowerCase());
+                        Lang.send(player, "command.blacklist.remove.success", args[1]);
+                    }
+                }
+            } else {
+                Lang.send(player, "command.blacklist.gotohelp");
+            }
+        } else {
+            Lang.send(player, "command.blacklist.gotohelp");
+        }
+        return true;
+    }
+
+}

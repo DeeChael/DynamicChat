@@ -32,7 +32,7 @@ public class ConsoleUserEntity extends UserEntity {
     void chat0(CommandSender sender, String format, String message) {
         String formatText = DynamicChatPlaceholder.replaceSender(sender, ConfigUtils.getChatFormat()).replace("%message%", message);
         ComponentBuilder builder = new ComponentBuilder();
-        ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/chat-cache-clicker message " + DynamicChatManager.addChatCache(new MessageEntity(this, message.replace("§", "&"))));
+        ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/chat-cache-clicker message " + DynamicChatManager.newChatCache(this, message.replace("§", "&")));
         HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(Lang.lang(sender, "message.hover")));
         DuObj<String[], String[]> du = StringUtils.split(formatText, Pattern.compile("§x(§([a-fA-F\\d])){6}"));
         String[] contents = du.getFirst();

@@ -8,9 +8,12 @@ public class MessageEntity implements Message {
     private final User user;
     private final String content;
 
-    public MessageEntity(User user, String content) {
+    private final String id;
+
+    public MessageEntity(User user, String content, String id) {
         this.user = user;
         this.content = content.replaceAll("§x(§([a-fA-F\\d])){6}", "").replaceAll("§[abcdefklmnorABCDEFKLMNOR0123456789]", "");
+        this.id = id;
     }
 
     @Override
@@ -23,4 +26,8 @@ public class MessageEntity implements Message {
         return content;
     }
 
+    @Override
+    public String getId() {
+        return id;
+    }
 }

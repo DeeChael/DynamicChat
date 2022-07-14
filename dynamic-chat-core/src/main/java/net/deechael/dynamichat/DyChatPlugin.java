@@ -52,22 +52,23 @@ public class DyChatPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        new AnvilGUI(this).drop();
         new DynamicChatPlaceholder().register();
         Bukkit.getPluginManager().registerEvents(EzCommandManager.INSTANCE, this);
         Bukkit.getPluginManager().registerEvents(new DynamicChatListener(), this);
         ChatManager.getManager().registerButton(0, new CopyMessageButton() {
             @Override
-            public String value(CommandSender clicker, User sender, String message) {
-                return message;
+            public String value(CommandSender clicker, Message message) {
+                return message.getContent();
             }
 
             @Override
-            public String display(CommandSender clicker, User sender, String message) {
+            public String display(CommandSender clicker, Message message) {
                 return Lang.lang(clicker, "message.button.copy.display");
             }
 
             @Override
-            public String hover(CommandSender clicker, User sender, String message) {
+            public String hover(CommandSender clicker, Message message) {
                 return Lang.lang(clicker, "message.button.copy.hover");
             }
 
@@ -110,10 +111,7 @@ public class DyChatPlugin extends JavaPlugin {
                     if (itemMeta != null) {
                         itemMeta.setDisplayName("§a§lAPPLY");
                         if (result != null) {
-                            ItemMeta resultMeta = result.getItemMeta();
-                            if (resultMeta != null) {
-                                itemMeta.setLore(List.of("§r§aYou are renaming to §b" + resultMeta.getDisplayName()));
-                            }
+                            itemMeta.setLore(List.of("§r§aYou are renaming to §b" + result));
                         } else {
                             itemMeta.setLore(List.of("§r§aYou are renaming to §b"));
                         }
@@ -381,18 +379,20 @@ public class DyChatPlugin extends JavaPlugin {
                                             continue;
                                         MessageButton button = buttons.get(i);
                                         ComponentBuilder buttonBuilder;
-                                        String display = button.display(sender, msg.getSender(), msg.getContent());
-                                        if (display != null && !display.isBlank() && !display.isEmpty()) {
+                                        String display = button.display(sender, msg);
+                                        if (display == null)
+                                            continue;
+                                        if (!display.isBlank() && !display.isEmpty()) {
                                             buttonBuilder = new ComponentBuilder(display);
                                         } else {
                                             buttonBuilder = new ComponentBuilder("Button" + (i + 1));
                                         }
-                                        String hover = button.hover(sender, msg.getSender(), msg.getContent());
+                                        String hover = button.hover(sender, msg);
                                         if (hover != null) {
                                             buttonBuilder.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(hover)));
                                         }
                                         if (button instanceof CopyMessageButton copyButton) {
-                                            buttonBuilder.event(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copyButton.value(sender, msg.getSender(), msg.getContent())));
+                                            buttonBuilder.event(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copyButton.value(sender, msg)));
                                         } else {
                                             buttonBuilder.event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/chat-cache-clicker click " + cache_id + " " + i));
                                         }
@@ -416,7 +416,7 @@ public class DyChatPlugin extends JavaPlugin {
                                         Lang.send(sender, "command.message.cannotlocate");
                                     } else {
                                         try {
-                                            ChatManager.getManager().getButtons().get(index).click(sender, msg.getSender(), msg.getContent());
+                                            ChatManager.getManager().getButtons().get(index).click(sender, msg);
                                         } catch (IndexOutOfBoundsException e) {
                                             Lang.send(sender, "command.message.unknownbutton");
                                         }

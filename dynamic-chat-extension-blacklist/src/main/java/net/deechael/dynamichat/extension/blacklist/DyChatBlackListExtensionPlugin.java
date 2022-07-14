@@ -1,6 +1,7 @@
 package net.deechael.dynamichat.extension.blacklist;
 
 import net.deechael.dynamichat.api.ChatManager;
+import net.deechael.dynamichat.api.Message;
 import net.deechael.dynamichat.api.MessageButton;
 import net.deechael.dynamichat.api.User;
 import net.deechael.dynamichat.extension.blacklist.commands.CommandBlackList;
@@ -11,7 +12,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Objects;
 
 public final class DyChatBlackListExtensionPlugin extends JavaPlugin {
 
@@ -21,24 +21,24 @@ public final class DyChatBlackListExtensionPlugin extends JavaPlugin {
         getCommandMap().register("dynamic-chat", new CommandBlackList());
         ChatManager.getManager().registerButton(1, new MessageButton() {
             @Override
-            public String display(CommandSender clicker, User sender, String message) {
+            public String display(CommandSender clicker, Message message) {
                 Player player = (Player) clicker;
                 return Lang.lang(player, "button.display");
             }
 
             @Override
-            public void click(CommandSender clicker, User sender, String message) {
+            public void click(CommandSender clicker, Message message) {
                 Player player = (Player) clicker;
-                if (player.getName().equalsIgnoreCase(sender.getName())) {
+                if (player.getName().equalsIgnoreCase(message.getSender().getName())) {
                     Lang.send(player, "command.blacklist.notself");
                     return;
                 }
-                BlackListManager.add(player, sender.getName().toLowerCase());
-                Lang.send(player, "command.blacklist.add.success", sender.getName());
+                BlackListManager.add(player, message.getSender().getName().toLowerCase());
+                Lang.send(player, "command.blacklist.add.success", message.getSender().getName());
             }
 
             @Override
-            public String hover(CommandSender clicker, User sender, String message) {
+            public String hover(CommandSender clicker, Message message) {
                 Player player = (Player) clicker;
                 return Lang.lang(player, "button.hover");
             }

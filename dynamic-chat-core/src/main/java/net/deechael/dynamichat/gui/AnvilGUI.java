@@ -4,6 +4,7 @@ import net.deechael.dcg.*;
 import net.deechael.dcg.generator.JGenerator;
 import net.deechael.dcg.items.Var;
 import net.deechael.dynamichat.util.Ref;
+import net.deechael.useless.function.parameters.DuParameter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -17,6 +18,7 @@ import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Constructor;
@@ -28,12 +30,24 @@ import java.util.Objects;
 
 public final class AnvilGUI implements Listener {
 
-    private static Class<?> anvilClass = null;
+    private static Class<?> anvilClass;
     private final Plugin plugin;
     private final Map<Player, Inventory> cache = new HashMap<>();
     private final Map<Integer, Slot> inputs = new HashMap<>();
     private final String title;
     private boolean dropped = false;
+
+    private DuParameter<Player, Inventory> onClose = (player, inventory) -> {};
+
+    private Map<Player, String> outputString = new HashMap<>();
+
+    static {
+        anvilClass = generateAnvilClass();
+    }
+
+    public void setOnClose(DuParameter<Player, Inventory> onClose) {
+        this.onClose = onClose;
+    }
 
     public AnvilGUI(Plugin plugin) {
         this(plugin, "Anvil");
@@ -80,7 +94,7 @@ public final class AnvilGUI implements Listener {
         inputs.put(2, input);
         for (Map.Entry<Player, Inventory> entry : cache.entrySet()) {
             if (input instanceof AnvilOutputImage image) {
-                entry.getValue().setItem(2, image.draw(entry.getKey(), entry.getValue(), entry.getValue().getItem(2)));
+                entry.getValue().setItem(2, image.draw(entry.getKey(), entry.getValue(), outputString.get(entry.getKey())));
             }
         }
     }
@@ -112,7 +126,13 @@ public final class AnvilGUI implements Listener {
                     inventory.setItem(i, image.draw(player, inventory));
                 } else if (input instanceof AnvilOutputImage image) {
                     if (inputs.containsKey(0)) {
-                        inventory.setItem(2, image.draw(player, inventory, inventory.getItem(0)));
+                        ItemMeta itemMeta = inventory.getItem(0).getItemMeta();
+                        if (itemMeta != null) {
+                            outputString.put(player, itemMeta.getDisplayName());
+                        } else {
+                            outputString.put(player, "");
+                        }
+                        inventory.setItem(2, image.draw(player, inventory, outputString.get(player)));
                     }
                 }
             }
@@ -130,8 +150,11 @@ public final class AnvilGUI implements Listener {
 
     public void drop() {
         if (isDropped()) return;
-        cache.keySet().forEach(Player::closeInventory);
         HandlerList.unregisterAll(this);
+        try {
+            cache.keySet().forEach(Player::closeInventory);
+        } catch (Exception ignored) {
+        }
         dropped = true;
     }
 
@@ -140,10 +163,14 @@ public final class AnvilGUI implements Listener {
         Player player = (Player) event.getView().getPlayer();
         if (cache.containsKey(player)) {
             if (event.getView().getTopInventory().equals(cache.get(player))) {
+                ItemStack result = event.getResult();
+                if (result != null) {
+                    outputString.put(player, result.getItemMeta().getDisplayName());
+                }
                 if (inputs.containsKey(2)) {
                     Slot input = inputs.get(2);
                     if (input instanceof AnvilOutputImage image) {
-                        event.setResult(image.draw(player, event.getView().getTopInventory(), event.getResult()));
+                        event.setResult(image.draw(player, event.getView().getTopInventory(), outputString.get(player)));
                     }
                 }
             }
@@ -191,7 +218,7 @@ public final class AnvilGUI implements Listener {
                                 }
                             } else if (input instanceof AnvilOutputClicker clicker) {
                                 Inventory inventory = event.getView().getTopInventory();
-                                clicker.click(player, inventory, inventory.getItem(2), event.getClick(), event.getAction());
+                                clicker.click(player, inventory, outputString.get(player), event.getClick(), event.getAction());
                             }
                         }
                     }
@@ -211,7 +238,8 @@ public final class AnvilGUI implements Listener {
             Player player = (Player) event.getPlayer();
             if (cache.containsKey(player)) {
                 if (event.getView().getTopInventory().equals(cache.get(player))) {
-                    cache.remove(player);
+                    outputString.remove(player);
+                    onClose.apply(player, cache.remove(player));
                 }
             }
         }
@@ -221,9 +249,10 @@ public final class AnvilGUI implements Listener {
     public void onQuit(PlayerQuitEvent event) {
         if (isDropped()) return;
         cache.remove(event.getPlayer());
+        outputString.remove(event.getPlayer());
     }
 
-    private Class<?> generateAnvilClass() {
+    private static Class<?> generateAnvilClass() {
         JClass anvil = new JClass(Level.PUBLIC, "net.deechael.dynamichat.gui", "NMSAnvil");
         anvil.importClass(AnvilInterface.class);
         anvil.importClass(Ref.getNmsOrOld("network.protocol.game.PacketPlayOutOpenWindow", "PacketPlayOutOpenWindow"));

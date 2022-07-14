@@ -6,6 +6,6 @@ import org.bukkit.inventory.ItemStack;
 
 public interface AnvilOutputImage extends AnvilOutputSlot {
 
-    ItemStack draw(Player viewer, Inventory inventory, ItemStack outputItem);
+    ItemStack draw(Player viewer, Inventory inventory, String outputName);
 
 }

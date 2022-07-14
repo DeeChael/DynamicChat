@@ -1,9 +1,6 @@
 package net.deechael.dynamichat.entity;
 
-import net.deechael.dynamichat.api.Channel;
-import net.deechael.dynamichat.api.ChatManager;
-import net.deechael.dynamichat.api.Message;
-import net.deechael.dynamichat.api.MessageButton;
+import net.deechael.dynamichat.api.*;
 import net.deechael.dynamichat.util.ConfigUtils;
 import net.deechael.dynamichat.util.StringUtils;
 import net.deechael.useless.objs.FiObj;
@@ -41,12 +38,12 @@ public class DynamicChatManager extends ChatManager {
         return (DynamicChatManager) ChatManager.getManager();
     }
 
-    public static String addChatCache(Message builder) {
+    public static String newChatCache(User user, String message) {
         String key = StringUtils.random64();
         while (getChatManager().chatCaches.containsKey(key)) {
             key = StringUtils.random64();
         }
-        getChatManager().chatCaches.put(key, builder);
+        getChatManager().chatCaches.put(key, new MessageEntity(user, message, key));
         return key;
     }
 

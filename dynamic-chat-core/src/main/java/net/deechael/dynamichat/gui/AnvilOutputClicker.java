@@ -8,6 +8,6 @@ import org.bukkit.inventory.ItemStack;
 
 public interface AnvilOutputClicker extends AnvilOutputSlot {
 
-    void click(Player viewer, Inventory inventory, ItemStack outputItem, ClickType type, InventoryAction action);
+    void click(Player viewer, Inventory inventory, String outputItem, ClickType type, InventoryAction action);
 
 }

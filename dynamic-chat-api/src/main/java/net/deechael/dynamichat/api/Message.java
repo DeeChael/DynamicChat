@@ -6,4 +6,6 @@ public interface Message {
 
     String getContent();
 
+    String getId();
+
 }

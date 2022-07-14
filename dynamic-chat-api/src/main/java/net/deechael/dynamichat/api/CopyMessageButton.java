@@ -4,10 +4,10 @@ import org.bukkit.command.CommandSender;
 
 public interface CopyMessageButton extends MessageButton {
 
-    String value(CommandSender clicker, User sender, String message);
+    String value(CommandSender clicker, Message message);
 
     @Override
-    default void click(CommandSender clicker, User sender, String message) {
+    default void click(CommandSender clicker, Message message) {
     }
 
 }

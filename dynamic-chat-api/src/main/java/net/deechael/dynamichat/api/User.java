@@ -1,5 +1,7 @@
 package net.deechael.dynamichat.api;
 
+import org.bukkit.command.CommandSender;
+
 import java.util.List;
 
 public interface User {
@@ -17,6 +19,8 @@ public interface User {
     String getDisplayName();
 
     List<? extends Channel> getAvailable();
+
+    CommandSender getSender();
 
     void moveTo(Channel channel);
 

@@ -1,6 +1,5 @@
 package net.deechael.dynamichat.extension.report;
 
-import net.deechael.dynamichat.api.Message;
 import net.deechael.dynamichat.api.MuteMessage;
 import net.deechael.dynamichat.entity.DynamicChatManager;
 import net.deechael.dynamichat.gui.*;
@@ -94,7 +93,7 @@ public final class GUIUtils {
                 gui.setItem(itemSlot.get(i - (28 * (page - 1))), new Button() {
                     @Override
                     public void click(Player viewer, Inventory inventory, ClickType type, InventoryAction action) {
-                        viewer.closeInventory();;
+                        viewer.closeInventory();
                         openSingleReport(player, finalPage, report);
                         gui.drop();
                     }

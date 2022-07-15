@@ -2,7 +2,6 @@ package net.deechael.dynamichat.extension.report;
 
 import java.io.File;
 import java.util.Date;
-import java.util.UUID;
 
 public class MessageReport extends Report {
 

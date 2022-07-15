@@ -1,7 +1,9 @@
 package net.deechael.dynamichat.entity;
 
 import me.clip.placeholderapi.PlaceholderAPI;
-import net.deechael.dynamichat.api.*;
+import net.deechael.dynamichat.api.Channel;
+import net.deechael.dynamichat.api.ChatManager;
+import net.deechael.dynamichat.api.User;
 import net.deechael.dynamichat.event.CommandSayEvent;
 import net.deechael.dynamichat.event.UserChatEvent;
 import net.deechael.dynamichat.event.WhisperEvent;
@@ -71,10 +73,10 @@ public abstract class UserEntity implements User {
             return;
         }
         message = event.getMessage();
-        this.getSender().sendMessage(DynamicChatPlaceholder.replaceReceiver(((UserEntity) another).getSender(), ConfigUtils.getWhisperSend()).replace("%message%", message));
-        ((UserEntity) another).getSender().sendMessage(DynamicChatPlaceholder.replaceSender(this.getSender(), ConfigUtils.getWhisperReceive()).replace("%message%", message));
+        this.getSender().sendMessage(DynamicChatPlaceholder.replaceReceiver(another.getSender(), ConfigUtils.getWhisperSend()).replace("%message%", message));
+        another.getSender().sendMessage(DynamicChatPlaceholder.replaceSender(this.getSender(), ConfigUtils.getWhisperReceive()).replace("%message%", message));
         if (ConfigUtils.whisperSound()) {
-            CommandSender s = ((UserEntity) another).getSender();
+            CommandSender s = another.getSender();
             if (s instanceof Player player) {
                 player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0f, 1.0f);
             }

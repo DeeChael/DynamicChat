@@ -30,7 +30,8 @@ public class NormalGUI implements Listener {
     private final String title;
     private boolean dropped = false;
 
-    private DuParameter<Player, Inventory> onClose = (player, inventory) -> {};
+    private DuParameter<Player, Inventory> onClose = (player, inventory) -> {
+    };
 
     public NormalGUI(Plugin plugin, Type type) {
         this(plugin, type, "GUI");

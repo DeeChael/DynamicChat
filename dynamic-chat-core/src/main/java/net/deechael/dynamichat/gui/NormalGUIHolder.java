@@ -14,14 +14,14 @@ public class NormalGUIHolder implements InventoryHolder {
         this.id = id;
     }
 
-    public void setInventory(Inventory inventory) {
-        this.inventory = inventory;
-    }
-
     @NotNull
     @Override
     public Inventory getInventory() {
         return inventory;
+    }
+
+    public void setInventory(Inventory inventory) {
+        this.inventory = inventory;
     }
 
     public String getId() {

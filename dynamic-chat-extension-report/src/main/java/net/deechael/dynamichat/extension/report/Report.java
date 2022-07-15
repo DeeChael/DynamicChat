@@ -34,10 +34,6 @@ public class Report {
         this.admin = admin;
     }
 
-    public void setApproached(boolean approached) {
-        this.approached = approached;
-    }
-
     public File getReportFile() {
         return file;
     }
@@ -74,12 +70,20 @@ public class Report {
         return approached;
     }
 
+    public void setApproached(boolean approached) {
+        this.approached = approached;
+    }
+
     public String getAdmin() {
         return admin;
     }
 
     public void setAdmin(String admin) {
         this.admin = admin;
+    }
+
+    public Date getSolveDate() {
+        return solveDate;
     }
 
     public void setSolveDate(String solveDate) {
@@ -89,19 +93,15 @@ public class Report {
         }
     }
 
-    public void setAdminReply(String adminReply) {
-        this.adminReply = adminReply;
-    }
-
-    public Date getSolveDate() {
-        return solveDate;
-    }
-
     public String getSolveDateString() {
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(solveDate);
     }
 
     public String getAdminReply() {
         return adminReply;
+    }
+
+    public void setAdminReply(String adminReply) {
+        this.adminReply = adminReply;
     }
 }

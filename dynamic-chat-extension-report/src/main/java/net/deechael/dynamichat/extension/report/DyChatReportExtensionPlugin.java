@@ -1,6 +1,9 @@
 package net.deechael.dynamichat.extension.report;
 
-import net.deechael.dynamichat.api.*;
+import net.deechael.dynamichat.api.ChatManager;
+import net.deechael.dynamichat.api.Message;
+import net.deechael.dynamichat.api.MessageButton;
+import net.deechael.dynamichat.api.PlayerUser;
 import net.deechael.dynamichat.extension.report.commands.CommandReport;
 import net.deechael.dynamichat.gui.AnvilGUI;
 import net.deechael.dynamichat.gui.AnvilOutputButton;
@@ -24,6 +27,18 @@ import java.util.Date;
 import java.util.List;
 
 public final class DyChatReportExtensionPlugin extends JavaPlugin {
+
+    public static DyChatReportExtensionPlugin getInstance() {
+        return JavaPlugin.getPlugin(DyChatReportExtensionPlugin.class);
+    }
+
+    private static CommandMap getCommandMap() {
+        try {
+            return (CommandMap) Bukkit.getServer().getClass().getMethod("getCommandMap").invoke(Bukkit.getServer());
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public void onEnable() {
@@ -104,18 +119,6 @@ public final class DyChatReportExtensionPlugin extends JavaPlugin {
                 return Lang.lang(player, "button.hover");
             }
         });
-    }
-
-    public static DyChatReportExtensionPlugin getInstance() {
-        return JavaPlugin.getPlugin(DyChatReportExtensionPlugin.class);
-    }
-
-    private static CommandMap getCommandMap() {
-        try {
-            return (CommandMap) Bukkit.getServer().getClass().getMethod("getCommandMap").invoke(Bukkit.getServer());
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }

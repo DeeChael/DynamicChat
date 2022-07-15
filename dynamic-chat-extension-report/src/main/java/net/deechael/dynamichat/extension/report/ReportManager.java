@@ -17,7 +17,7 @@ public final class ReportManager {
 
     private final static Map<UUID, Date> lastReport = new HashMap<>();
 
-    private final static Map<UUID,List<String>> reported = new HashMap<>();
+    private final static Map<UUID, List<String>> reported = new HashMap<>();
 
     public static Date getLastReport(UUID uuid) {
         return lastReport.get(uuid);

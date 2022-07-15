@@ -12,6 +12,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class DyChatMNBExtensionPlugin extends JavaPlugin {
 
+    public static DyChatMNBExtensionPlugin getInstance() {
+        return JavaPlugin.getPlugin(DyChatMNBExtensionPlugin.class);
+    }
+
     @Override
     public void onEnable() {
         Config.checkConfig();
@@ -64,10 +68,6 @@ public final class DyChatMNBExtensionPlugin extends JavaPlugin {
                 return Lang.lang(player, "button.ban.hover");
             }
         });
-    }
-
-    public static DyChatMNBExtensionPlugin getInstance() {
-        return JavaPlugin.getPlugin(DyChatMNBExtensionPlugin.class);
     }
 
 }

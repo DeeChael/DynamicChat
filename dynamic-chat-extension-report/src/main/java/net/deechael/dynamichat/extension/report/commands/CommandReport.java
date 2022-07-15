@@ -1,9 +1,5 @@
 package net.deechael.dynamichat.extension.report.commands;
 
-import net.deechael.dynamichat.api.Message;
-import net.deechael.dynamichat.api.PlayerUser;
-import net.deechael.dynamichat.entity.DynamicChatManager;
-import net.deechael.dynamichat.entity.PlayerUserEntity;
 import net.deechael.dynamichat.extension.report.*;
 import net.deechael.dynamichat.gui.AnvilGUI;
 import net.deechael.dynamichat.gui.AnvilOutputButton;

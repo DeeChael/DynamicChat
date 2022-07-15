@@ -9,6 +9,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.InvocationTargetException;
@@ -18,6 +20,8 @@ public final class DyChatBlackListExtensionPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         Lang.checkLanguage();
+        Bukkit.getPluginManager().registerEvents(new DynamicEventListener(), this);
+        Bukkit.getPluginManager().addPermission(new Permission("dynamichat.blacklist.ignore", PermissionDefault.OP));
         getCommandMap().register("dynamic-chat", new CommandBlackList());
         ChatManager.getManager().registerButton(1, new MessageButton() {
             @Override

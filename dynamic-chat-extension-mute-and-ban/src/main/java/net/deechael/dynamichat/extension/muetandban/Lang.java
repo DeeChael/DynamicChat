@@ -1,4 +1,4 @@
-package net.deechael.dynamichat.extension.blacklist;
+package net.deechael.dynamichat.extension.muetandban;
 
 import net.deechael.dynamichat.api.ChatManager;
 import org.bukkit.command.CommandSender;
@@ -15,59 +15,61 @@ import java.util.Objects;
 public class Lang {
 
     public static void checkLanguage() {
-        File langFile = new File(new File(DyChatBlackListExtensionPlugin.getInstance().getDataFolder(), "languages"), "en_us.yml");
+        File langFile = new File(new File(DyChatMNBExtensionPlugin.getInstance().getDataFolder(), "languages"), "en_us.yml");
         if (!langFile.exists()) {
+            File parent = langFile.getParentFile();
+            if (parent != null) {
+                if (!parent.exists()) {
+                    parent.mkdirs();
+                }
+            }
             try {
                 langFile.createNewFile();
             } catch (IOException ignored) {
             }
         }
         FileConfiguration configuration = YamlConfiguration.loadConfiguration(langFile);
-        setDefault(configuration, "command.mustbeplayer", "&c&l(!) &r&cYou must be a player");
-        setDefault(configuration, "command.blacklist.gotohelp", "&c&l(!) &r&cType \"/blacklist help\" to get help");
-        setDefault(configuration, "command.blacklist.help", List.of("&6&l==============================",
-                "&e/blacklist help - get help",
-                "&e/blacklist add <player> - add a player to your blacklist",
-                "&e/blacklist remove <player> - remove a player from your blacklist",
-                "&6&l=============================="));
-        setDefault(configuration, "command.blacklist.add.success", "&a&l(!) &r&aYou added &b{0} &ato your blacklist successfully!");
-        setDefault(configuration, "command.blacklist.add.alreadyin", "&c&l(!) &r&cYou have added &b{0} &ato your blacklist already!");
-        setDefault(configuration, "command.blacklist.remove.success", "&a&l(!) &r&aYou removed &b{0} &afrom your blacklist successfully!");
-        setDefault(configuration, "command.blacklist.remove.notin", "&c&l(!) &r&cYou didn't add &b{0} &cto your blacklist!");
-        setDefault(configuration, "command.blacklist.notself", "&c&l(!) &r&cYou cannot add yourself to your blacklist");
-        setDefault(configuration, "command.blacklist.selfnot", "&c&l(!) &r&cYou cannot be in your blacklist");
-        setDefault(configuration, "command.blacklist.notint", "&c&l(!) &r&cPage number must be a integer!");
-        setDefault(configuration, "button.display", "&b&l[&r&bAdd to Blacklist&r&b&l]");
-        setDefault(configuration, "button.hover", "&b&lAdd this player to your blacklist");
+        //setDefault(configuration, "command.mustbeplayer", "&c&l(!) &r&cYou must be a player!");
+        //setDefault(configuration, "command.nopermission", "&c&l(!) &r&cYou don't have the permission!");
+        //setDefault(configuration, "command.mute.gotohelp", "&c&l(!) &r&cType \"/mute help\" to get help");
+        //setDefault(configuration, "command.mute.help", List.of("&6&l==============================",
+        //        "&e/report help - get help",
+        //        "&e/report report <player> - report a player",
+        //        "&e/report reports - open report management gui",
+        //        "&6&l=============================="));
+        setDefault(configuration, "button.mute.display", "&6&l[&r&6Mute&r&6&l]");
+        setDefault(configuration, "button.mute.hover", "&b&lMute this player");
+        setDefault(configuration, "button.ban.display", "&4&l[&r&4Ban&r&4&l]");
+        setDefault(configuration, "button.ban.hover", "&b&lBan this player");
         try {
             configuration.save(langFile);
         } catch (IOException ignored) {
         }
     }
 
-    public static void sendConsole(CommandSender sender, String key, String... params) {
+    public static void sendConsole(CommandSender sender, String key, Object... params) {
         String message = lang(key);
         for (int i = 0; i < params.length; i++) {
-            message = message.replace("{" + i + "}", params[i]);
+            message = message.replace("{" + i + "}", params[i].toString());
         }
         sender.sendMessage(message);
     }
 
-    public static void send(Player player, String key, String... params) {
+    public static void send(Player player, String key, Object... params) {
         player.sendMessage(lang(player, key, params));
     }
 
-    public static String lang(Player player, String key, String... params) {
+    public static String lang(Player player, String key, Object... params) {
         if (ChatManager.getManager().languageFollowClient()) {
             String message = lang(player.getLocale(), key);
             for (int i = 0; i < params.length; i++) {
-                message = message.replace("{" + i + "}", params[i]);
+                message = message.replace("{" + i + "}", params[i].toString());
             }
             return message;
         }
         String message = lang(key);
         for (int i = 0; i < params.length; i++) {
-            message = message.replace("{" + i + "}", params[i]);
+            message = message.replace("{" + i + "}", params[i].toString());
         }
         return message;
     }
@@ -77,7 +79,7 @@ public class Lang {
     }
 
     private static String lang(String name, String key) {
-        File langFile = new File(new File(DyChatBlackListExtensionPlugin.getInstance().getDataFolder(), "languages"), name + ".yml");
+        File langFile = new File(new File(DyChatMNBExtensionPlugin.getInstance().getDataFolder(), "languages"), name + ".yml");
         if (!langFile.exists()) {
             if (Objects.equals(name, "en_us")) {
                 return "Unknown message: " + key;

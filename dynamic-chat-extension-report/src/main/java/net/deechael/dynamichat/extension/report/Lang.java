@@ -57,10 +57,12 @@ public class Lang {
         setDefault(configuration, "gui.admin.title", "&c>> DynamicChat | Admin | &c&l(&r&6&l{0}&r&c&l&c/&r&6&l{1}&r&c&l)");
         setDefault(configuration, "gui.approve.title", "&c&lApprove Report");
         setDefault(configuration, "gui.reports.report.title", "&c&lReports | {0}");
+        setDefault(configuration, "gui.reports.message.title", "&c&lMessage | {0}");
         setDefault(configuration, "gui.reports.report.admin.title", "&c&lReports | &r&f{0}&r&c&l | {1}");
         setDefault(configuration, "gui.reports.report.item.suspect.display", "&c&lSuspect: &r&f{0}");
         setDefault(configuration, "gui.reports.report.item.suspect.lore", "&b&lLast Online:&r&a {0}");
         setDefault(configuration, "gui.reports.report.item.message.display", "&b&lMessage");
+        setDefault(configuration, "gui.reports.report.item.message.lore", "&b&lClick to view context");
         setDefault(configuration, "gui.reports.report.item.reason.display", "&b&lReason");
         setDefault(configuration, "gui.reports.report.item.approved.lore", List.of("&b&lAdmin: &r&a{0}", "&b&lDate: &r&a{1}", "&b&lComment: &r{2}"));
         setDefault(configuration, "gui.reports.item.approved.prefix", "&a&l{0}");

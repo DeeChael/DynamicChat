@@ -1,6 +1,8 @@
 package net.deechael.dynamichat.entity;
 
+import net.deechael.dynamichat.DyChatPlugin;
 import net.deechael.dynamichat.api.*;
+import net.deechael.dynamichat.sql.Sqlite;
 import net.deechael.dynamichat.util.ConfigUtils;
 import net.deechael.dynamichat.util.StringUtils;
 import net.deechael.useless.objs.FiObj;
@@ -10,10 +12,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
 
 public class DynamicChatManager extends ChatManager {
 
@@ -25,6 +29,12 @@ public class DynamicChatManager extends ChatManager {
     private final Map<String, Message> chatCaches = new HashMap<>();
 
     private final Map<Integer, MessageButton> buttons = new HashMap<>();
+
+    private final List<Map.Entry<String, MuteMessage>> records = new ArrayList<>();
+
+    private final List<String> recordKeys = new ArrayList<>();
+
+    private Sqlite sqlite;
 
     public DynamicChatManager() {
         global.setDisplayName(ConfigUtils.globalChannelDisplayName());
@@ -43,7 +53,14 @@ public class DynamicChatManager extends ChatManager {
         while (getChatManager().chatCaches.containsKey(key)) {
             key = StringUtils.random64();
         }
-        getChatManager().chatCaches.put(key, new MessageEntity(user, message, key));
+        while (getChatManager().recordKeys.contains(key)) {
+            key = StringUtils.random64();
+        }
+        Message messageEntity = new MessageEntity(user, message, key);
+        getChatManager().recordKeys.add(key);
+        getChatManager().records.add(new AbstractMap.SimpleEntry<>(key, messageEntity));
+        getChatManager().chatCaches.put(key, messageEntity);
+        addRecord(messageEntity);
         return key;
     }
 
@@ -52,6 +69,33 @@ public class DynamicChatManager extends ChatManager {
     }
 
     public static void reload() {
+        if (getChatManager().sqlite != null) {
+            getChatManager().sqlite.close();
+        }
+        File dbFile = new File(DyChatPlugin.getInstance().getDataFolder(), "record.db");
+        if (!dbFile.exists()) {
+            try {
+                dbFile.createNewFile();
+            } catch (IOException ignored) {
+            }
+        }
+        getChatManager().records.clear();
+        getChatManager().recordKeys.clear();
+        getChatManager().sqlite = new Sqlite(dbFile);
+        getChatManager().sqlite.executeUpdate("CREATE TABLE IF NOT EXISTS `messages` ( `msg_id` TEXT , `sender` TEXT , `content` TEXT);");
+        ResultSet resultSet = getChatManager().sqlite.executeQuery("SELECT * FROM `messages`;");
+        try {
+            while (resultSet.next()) {
+                String id = resultSet.getString("msg_id");
+                String sender = resultSet.getString("sender");
+                String content = resultSet.getString("content").replaceAll("\\\\'", "'");
+                getChatManager().recordKeys.add(id);
+                getChatManager().records.add(new AbstractMap.SimpleEntry<>(id, new MuteMessageEntity(sender, content, id)));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
         for (Player player : Bukkit.getOnlinePlayers()) {
             UserEntity user = ((UserEntity) ChatManager.getManager().getPlayerUser(player));
             user.setCurrent(DynamicChatManager.getChatManager().global);
@@ -86,6 +130,31 @@ public class DynamicChatManager extends ChatManager {
             entity.setPermissionFormats(channel.getFifth());
             getChatManager().channels.add(entity);
         }
+    }
+
+    public static void addRecord(MuteMessage message) {
+        PreparedStatement preparedStatement = getChatManager().sqlite.preparedStatement("INSERT INTO `messages` (`msg_id`, `sender`, `content`) VALUES (?, ?, ?);");
+        try {
+            preparedStatement.setString(1, message.getId());
+            preparedStatement.setString(2, message.getSenderName());
+            preparedStatement.setString(3, message.getContent());
+            preparedStatement.executeUpdate();
+            preparedStatement.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static int getMessageIndex(String id) {
+        return getChatManager().recordKeys.indexOf(id);
+    }
+
+    public static int messages() {
+        return getChatManager().recordKeys.size();
+    }
+
+    public static MuteMessage getMessage(int index) {
+        return getChatManager().records.get(index).getValue();
     }
 
     @Override

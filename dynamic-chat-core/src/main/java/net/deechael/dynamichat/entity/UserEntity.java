@@ -1,9 +1,7 @@
 package net.deechael.dynamichat.entity;
 
 import me.clip.placeholderapi.PlaceholderAPI;
-import net.deechael.dynamichat.api.Channel;
-import net.deechael.dynamichat.api.ChatManager;
-import net.deechael.dynamichat.api.User;
+import net.deechael.dynamichat.api.*;
 import net.deechael.dynamichat.event.CommandSayEvent;
 import net.deechael.dynamichat.event.UserChatEvent;
 import net.deechael.dynamichat.event.WhisperEvent;
@@ -129,6 +127,7 @@ public abstract class UserEntity implements User {
         message = event.getMessage();
         showers.clear();
         showers.addAll(event.getRecipients().stream().map(user -> ((PlayerUserEntity) user).getSender()).toList());
+        String msgId = DynamicChatManager.newChatCache(this, message);
         if (ConfigUtils.mentionPlayer()) {
             List<Player> hearers = new ArrayList<>();
             boolean everyoneMessageFormatted = false;
@@ -164,7 +163,7 @@ public abstract class UserEntity implements User {
                     } else if (copiedMessage.endsWith("@" + shower.getName())) {
                         copiedMessage = copiedMessage.substring(0, copiedMessage.length() - shower.getName().length() - 1) + "§6@" + shower.getName();
                     }
-                    chat0(shower, format, copiedMessage);
+                    chat0(shower, format, copiedMessage, msgId);
                     showers.remove(shower);
                     if (!hearers.contains(shower)) hearers.add(shower);
                 } else if (message.endsWith("@" + shower.getName())) {
@@ -179,7 +178,7 @@ public abstract class UserEntity implements User {
                         }
                     }
                     copiedMessage = copiedMessage.substring(0, copiedMessage.length() - shower.getName().length() - 1) + "§6@" + shower.getName().replace("@Everyone ", "§6@Everyone §r");
-                    chat0(shower, format, copiedMessage);
+                    chat0(shower, format, copiedMessage, msgId);
                     showers.remove(shower);
                     if (!hearers.contains(shower)) hearers.add(shower);
                 }
@@ -206,7 +205,7 @@ public abstract class UserEntity implements User {
                 }
             }
             for (Player player : showers) {
-                chat0(player, format, message);
+                chat0(player, format, message, msgId);
             }
             hearers.forEach(player -> player.playSound(player.getLocation(), Sound.ENTITY_CHICKEN_EGG, 1.0F, 1.0F));
         } else {
@@ -216,7 +215,7 @@ public abstract class UserEntity implements User {
                 }
             }
             for (Player shower : showers) {
-                chat0(shower, format, message);
+                chat0(shower, format, message, msgId);
             }
         }
     }
@@ -274,6 +273,7 @@ public abstract class UserEntity implements User {
         message = event.getMessage();
         showers.clear();
         showers.addAll(event.getRecipients().stream().map(user -> ((PlayerUserEntity) user).getSender()).toList());
+        String msgId = DynamicChatManager.newChatCache(this, message);
         if (ConfigUtils.mentionPlayer()) {
             List<Player> hearers = new ArrayList<>();
             boolean everyoneMessageFormatted = false;
@@ -309,7 +309,7 @@ public abstract class UserEntity implements User {
                     } else if (copiedMessage.endsWith("@" + shower.getName())) {
                         copiedMessage = copiedMessage.substring(0, copiedMessage.length() - shower.getName().length() - 1) + "§6@" + shower.getName();
                     }
-                    chat0(shower, format, copiedMessage);
+                    chat0(shower, format, copiedMessage, msgId);
                     showers.remove(shower);
                     if (!hearers.contains(shower)) hearers.add(shower);
                 } else if (message.endsWith("@" + shower.getName())) {
@@ -324,7 +324,7 @@ public abstract class UserEntity implements User {
                         }
                     }
                     copiedMessage = copiedMessage.substring(0, copiedMessage.length() - shower.getName().length() - 1) + "§6@" + shower.getName().replace("@Everyone ", "§6@Everyone §r");
-                    chat0(shower, format, copiedMessage);
+                    chat0(shower, format, copiedMessage, msgId);
                     showers.remove(shower);
                     if (!hearers.contains(shower)) hearers.add(shower);
                 }
@@ -351,7 +351,7 @@ public abstract class UserEntity implements User {
                 }
             }
             for (Player player : showers) {
-                chat0(player, format, message);
+                chat0(player, format, message, msgId);
             }
             hearers.forEach(player -> player.playSound(player.getLocation(), Sound.ENTITY_CHICKEN_EGG, 1.0F, 1.0F));
         } else {
@@ -361,7 +361,7 @@ public abstract class UserEntity implements User {
                 }
             }
             for (Player player : showers) {
-                chat0(player, format, message);
+                chat0(player, format, message, msgId);
             }
         }
         if (this instanceof PlayerUserEntity) {
@@ -442,6 +442,6 @@ public abstract class UserEntity implements User {
         return sender;
     }
 
-    abstract void chat0(CommandSender sender, String format, String message);
+    abstract void chat0(CommandSender sender, String format, String message, String id);
 
 }

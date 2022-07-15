@@ -64,6 +64,7 @@ public final class ReportManager {
         configuration.set("reporter-uuid", reporter.getUniqueId().toString());
         configuration.set("suspect", suspect.getName());
         configuration.set("suspect-uuid", suspect.getUniqueId().toString());
+        configuration.set("message-id", messageId);
         configuration.set("message-content", message);
         configuration.set("create-date", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         configuration.set("reason", reason);
@@ -163,7 +164,9 @@ public final class ReportManager {
                         configuration.getString("reason"),
                         configuration.getBoolean("approached"),
                         configuration.getString("admin"),
-                        configuration.getString("message-content"));
+                        configuration.getString("message-content"),
+                        configuration.getString("message-id")
+                );
                 if (configuration.contains("solve-date")) {
                     report.setSolveDate(configuration.getString("solve-date"));
                 }
@@ -246,7 +249,9 @@ public final class ReportManager {
                             configuration.getString("reason"),
                             configuration.getBoolean("approached"),
                             configuration.getString("admin"),
-                            configuration.getString("message-content"));
+                            configuration.getString("message-content"),
+                            configuration.getString("message-id")
+                    );
                     if (configuration.contains("solve-date")) {
                         report.setSolveDate(configuration.getString("solve-date"));
                     }
@@ -271,21 +276,9 @@ public final class ReportManager {
     public static void solveReport(Report report) {
         FileConfiguration configuration = YamlConfiguration.loadConfiguration(report.getReportFile());
         if (!report.isApproached()) {
-            configuration.set("reporter", report.getReporterName());
-            configuration.set("reporter-uuid", report.getReporterUUID().toString());
-            configuration.set("suspect", report.getSuspectName());
-            configuration.set("suspect-uuid", report.getSuspectUUID().toString());
-            configuration.set("create-date", report.getCreateDateString());
-            configuration.set("reason", report.getReason());
             configuration.set("approached", false);
             configuration.set("admin", "null");
         } else {
-            configuration.set("reporter", report.getReporterName());
-            configuration.set("reporter-uuid", report.getReporterUUID().toString());
-            configuration.set("suspect", report.getSuspectName());
-            configuration.set("suspect-uuid", report.getSuspectUUID().toString());
-            configuration.set("create-date", report.getCreateDateString());
-            configuration.set("reason", report.getReason());
             configuration.set("approached", true);
             configuration.set("admin", report.getAdmin());
             configuration.set("solve-date", report.getSolveDateString());

@@ -1,11 +1,12 @@
 package net.deechael.dynamichat.api;
 
-public interface Message {
+public interface Message extends MuteMessage {
 
     User getSender();
 
-    String getContent();
-
-    String getId();
+    @Override
+    default String getSenderName() {
+        return getSender().getName();
+    }
 
 }

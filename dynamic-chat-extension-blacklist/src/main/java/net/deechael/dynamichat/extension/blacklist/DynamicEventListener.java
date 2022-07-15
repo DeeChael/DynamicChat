@@ -7,16 +7,19 @@ import net.deechael.dynamichat.event.UserChatEvent;
 import net.deechael.dynamichat.event.WhisperEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public final class DynamicEventListener extends JavaPlugin {
+public final class DynamicEventListener implements Listener {
 
     @EventHandler
     public void onChat(UserChatEvent event) {
+        if (event.getUser().getSender().hasPermission("dynamichat.blacklist.ignore"))
+            return;
         if (!(event.getUser() instanceof PlayerUser player))
             return;
         List<PlayerUser> users = new ArrayList<>();
@@ -35,6 +38,8 @@ public final class DynamicEventListener extends JavaPlugin {
 
     @EventHandler
     public void onWhisper(WhisperEvent event) {
+        if (event.getSender().getSender().hasPermission("dynamichat.blacklist.ignore"))
+            return;
         if (!(event.getSender() instanceof PlayerUser sender))
             return;
         if (!(event.getReceiver() instanceof PlayerUser receiver))
@@ -46,6 +51,8 @@ public final class DynamicEventListener extends JavaPlugin {
 
     @EventHandler
     public void onSayCommand(CommandSayEvent event) {
+        if (event.getUser().getSender().hasPermission("dynamichat.blacklist.ignore"))
+            return;
         if (!(event.getUser() instanceof PlayerUser player))
             return;
         List<PlayerUser> users = new ArrayList<>();

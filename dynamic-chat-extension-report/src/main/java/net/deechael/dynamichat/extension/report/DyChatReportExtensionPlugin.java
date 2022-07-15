@@ -75,7 +75,7 @@ public final class DyChatReportExtensionPlugin extends JavaPlugin {
                                 reason = outputItem;
                             }
                             ReportManager.reportMessage(viewer, beReported, message.getContent(), message.getId(), reason);
-                            Lang.send(viewer, "command.report.success", player.getName());
+                            Lang.send(viewer, "command.report.success", beReported.getName());
                         } else {
                             Lang.send(viewer, "command.message.cannotlocate");
                         }

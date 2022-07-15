@@ -1,4 +1,4 @@
-package net.deechael.dynamichat.util;
+package net.deechael.dynamichat.extension.muetandban;
 
 import net.md_5.bungee.api.ChatColor;
 
@@ -9,62 +9,12 @@ import java.util.List;
 
 public final class ColorUtils {
 
-    private static final java.util.List<Character> ALL_CODES = new ArrayList<>();
+    private static final List<Character> ALL_CODES = new ArrayList<>();
     private static final List<Character> HEX_CODES = Arrays.asList('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F');
 
     static {
         for (char c : ChatColor.ALL_CODES.toCharArray()) {
             ALL_CODES.add(c);
-        }
-    }
-
-    public static ChatColor iHateSpigotBungeecordAndMD5(String code) {
-        switch (code) {
-            case "0":
-                return ChatColor.BLACK;
-            case "1":
-                return ChatColor.DARK_BLUE;
-            case "2":
-                return ChatColor.DARK_GREEN;
-            case "3":
-                return ChatColor.DARK_AQUA;
-            case "4":
-                return ChatColor.DARK_RED;
-            case "5":
-                return ChatColor.DARK_PURPLE;
-            case "6":
-                return ChatColor.GOLD;
-            case "7":
-                return ChatColor.GRAY;
-            case "8":
-                return ChatColor.DARK_GRAY;
-            case "9":
-                return ChatColor.BLUE;
-            case "a":
-                return ChatColor.GREEN;
-            case "b":
-                return ChatColor.AQUA;
-            case "c":
-                return ChatColor.RED;
-            case "d":
-                return ChatColor.LIGHT_PURPLE;
-            case "e":
-                return ChatColor.YELLOW;
-            case "f":
-                return ChatColor.WHITE;
-            case "k":
-                return ChatColor.MAGIC;
-            case "l":
-                return ChatColor.BOLD;
-            case "m":
-                return ChatColor.STRIKETHROUGH;
-            case "n":
-                return ChatColor.UNDERLINE;
-            case "o":
-                return ChatColor.ITALIC;
-            case "r":
-            default:
-                return ChatColor.RESET;
         }
     }
 

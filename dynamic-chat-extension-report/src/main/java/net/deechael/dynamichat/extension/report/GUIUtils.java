@@ -1,5 +1,8 @@
 package net.deechael.dynamichat.extension.report;
 
+import net.deechael.dynamichat.api.Message;
+import net.deechael.dynamichat.api.MuteMessage;
+import net.deechael.dynamichat.entity.DynamicChatManager;
 import net.deechael.dynamichat.gui.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -12,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -235,15 +239,25 @@ public final class GUIUtils {
                 }
                 return itemStack;
             });
-            gui.setItem(12, (Image) (viewer, inventory) -> {
-                ItemStack itemStack = new ItemStack(Material.PAPER);
-                ItemMeta itemMeta = itemStack.getItemMeta();
-                if (itemMeta != null) {
-                    itemMeta.setDisplayName(Lang.lang(viewer, "gui.reports.report.item.message.display"));
-                    itemMeta.setLore(List.of(("§r" + ColorUtils.processChatColor(ColorUtils.processGradientColor(messageReport.getMessage()))).split("\\n")));
-                    itemStack.setItemMeta(itemMeta);
+            gui.setItem(12, new Button() {
+                @Override
+                public void click(Player viewer, Inventory inventory, ClickType type, InventoryAction action) {
+                    viewer.closeInventory();
+                    viewContext(viewer, backPage, report);
+                    gui.drop();
                 }
-                return itemStack;
+
+                @Override
+                public ItemStack draw(Player viewer, Inventory inventory) {
+                    ItemStack itemStack = new ItemStack(Material.PAPER);
+                    ItemMeta itemMeta = itemStack.getItemMeta();
+                    if (itemMeta != null) {
+                        itemMeta.setDisplayName(Lang.lang(viewer, "gui.reports.report.item.message.display"));
+                        itemMeta.setLore(List.of(("§r" + ColorUtils.processChatColor(ColorUtils.processGradientColor(messageReport.getMessage())) + "\n" + Lang.lang(player, "gui.reports.report.item.message.lore")).split("\\n")));
+                        itemStack.setItemMeta(itemMeta);
+                    }
+                    return itemStack;
+                }
             });
             gui.setItem(14, (Image) (viewer, inventory) -> {
                 ItemStack itemStack = new ItemStack(Material.NAME_TAG);
@@ -529,15 +543,25 @@ public final class GUIUtils {
                 }
                 return itemStack;
             });
-            gui.setItem(12, (Image) (viewer, inventory) -> {
-                ItemStack itemStack = new ItemStack(Material.PAPER);
-                ItemMeta itemMeta = itemStack.getItemMeta();
-                if (itemMeta != null) {
-                    itemMeta.setDisplayName(Lang.lang(viewer, "gui.reports.report.item.message.display"));
-                    itemMeta.setLore(List.of(("§r" + ColorUtils.processChatColor(ColorUtils.processGradientColor(messageReport.getMessage()))).split("\\n")));
-                    itemStack.setItemMeta(itemMeta);
+            gui.setItem(12, new Button() {
+                @Override
+                public void click(Player viewer, Inventory inventory, ClickType type, InventoryAction action) {
+                    viewer.closeInventory();
+                    viewAdminContext(viewer, backPage, report);
+                    gui.drop();
                 }
-                return itemStack;
+
+                @Override
+                public ItemStack draw(Player viewer, Inventory inventory) {
+                    ItemStack itemStack = new ItemStack(Material.PAPER);
+                    ItemMeta itemMeta = itemStack.getItemMeta();
+                    if (itemMeta != null) {
+                        itemMeta.setDisplayName(Lang.lang(viewer, "gui.reports.report.item.message.display"));
+                        itemMeta.setLore(List.of(("§r" + ColorUtils.processChatColor(ColorUtils.processGradientColor(messageReport.getMessage())) + "\n" + Lang.lang(player, "gui.reports.report.item.message.lore")).split("\\n")));
+                        itemStack.setItemMeta(itemMeta);
+                    }
+                    return itemStack;
+                }
             });
             gui.setItem(14, (Image) (viewer, inventory) -> {
                 ItemStack itemStack = new ItemStack(Material.NAME_TAG);
@@ -648,15 +672,25 @@ public final class GUIUtils {
                 }
                 return itemStack;
             });
-            gui.setItem(12, (Image) (viewer, inventory) -> {
-                ItemStack itemStack = new ItemStack(Material.PAPER);
-                ItemMeta itemMeta = itemStack.getItemMeta();
-                if (itemMeta != null) {
-                    itemMeta.setDisplayName(Lang.lang(viewer, "gui.reports.report.item.message.display"));
-                    itemMeta.setLore(List.of(("§r" + ColorUtils.processChatColor(ColorUtils.processGradientColor(messageReport.getMessage()))).split("\\n")));
-                    itemStack.setItemMeta(itemMeta);
+            gui.setItem(12, new Button() {
+                @Override
+                public void click(Player viewer, Inventory inventory, ClickType type, InventoryAction action) {
+                    viewer.closeInventory();
+                    viewAdminContext(player, backPage, report);
+                    gui.drop();
                 }
-                return itemStack;
+
+                @Override
+                public ItemStack draw(Player viewer, Inventory inventory) {
+                    ItemStack itemStack = new ItemStack(Material.PAPER);
+                    ItemMeta itemMeta = itemStack.getItemMeta();
+                    if (itemMeta != null) {
+                        itemMeta.setDisplayName(Lang.lang(viewer, "gui.reports.report.item.message.display"));
+                        itemMeta.setLore(List.of(("§r" + ColorUtils.processChatColor(ColorUtils.processGradientColor(messageReport.getMessage())) + "\n" + Lang.lang(player, "gui.reports.report.item.message.lore")).split("\\n")));
+                        itemStack.setItemMeta(itemMeta);
+                    }
+                    return itemStack;
+                }
             });
             gui.setItem(14, (Image) (viewer, inventory) -> {
                 ItemStack itemStack = new ItemStack(Material.NAME_TAG);
@@ -766,6 +800,110 @@ public final class GUIUtils {
                 }
                 return itemStack;
             }
+        });
+        gui.open(player);
+    }
+
+    public static void viewContext(Player player, int backPage, Report report) {
+        NormalGUI gui = new NormalGUI(DyChatReportExtensionPlugin.getInstance(), NormalGUI.Type.NORMAL_3X9, Lang.lang(player, "gui.reports.message.title", report.getReporterName(), Lang.lang(player, report.isApproached() ? "gui.reports.item.approved.prefix" : "gui.reports.item.unapproved.prefix", report.getCreateDateString())));
+        gui.fill(OUTLINE_IMAGE);
+        gui.setItem(0, new Button() {
+            @Override
+            public void click(Player viewer, Inventory inventory, ClickType type, InventoryAction action) {
+                viewer.closeInventory();
+                openSingleReport(player, backPage, report);
+                gui.drop();
+            }
+
+            @Override
+            public ItemStack draw(Player viewer, Inventory inventory) {
+                ItemStack itemStack = new ItemStack(Material.RED_STAINED_GLASS_PANE);
+                ItemMeta itemMeta = itemStack.getItemMeta();
+                if (itemMeta != null) {
+                    itemMeta.setDisplayName(Lang.lang(viewer, "gui.reports.button.back"));
+                    itemStack.setItemMeta(itemMeta);
+                }
+                return itemStack;
+            }
+        });
+        gui.setItem(13, (Image) (viewer, inventory) -> {
+            ItemStack itemStack = new ItemStack(Material.PAPER);
+            ItemMeta itemMeta = itemStack.getItemMeta();
+            if (itemMeta != null) {
+                itemMeta.setDisplayName(Lang.lang(viewer, "gui.reports.report.item.message.display"));
+                List<String> lore = new ArrayList<>();
+                int index = DynamicChatManager.getMessageIndex(((MessageReport) report).getId());
+                if (index > DynamicChatManager.messages() || index < 0) {
+                    lore.add("§f" + report.getSuspectName() + ": " + ColorUtils.processChatColor(ColorUtils.processGradientColor(((MessageReport) report).getMessage())));
+                } else {
+                    for (int i = Math.max(0, index - 20); i < index; i++) {
+                        MuteMessage message = DynamicChatManager.getMessage(i);
+                        lore.add("§f" + message.getSenderName() + ": " + ColorUtils.processChatColor(ColorUtils.processGradientColor((message.getContent()))));
+                    }
+                    for (int i = index; i < Math.min(index + 20, DynamicChatManager.messages()); i++) {
+                        MuteMessage message = DynamicChatManager.getMessage(i);
+                        lore.add("§f" + message.getSenderName() + ": " + ColorUtils.processChatColor(ColorUtils.processGradientColor((message.getContent()))));
+                    }
+                }
+                itemMeta.setLore(lore);
+                itemStack.setItemMeta(itemMeta);
+            }
+            return itemStack;
+        });
+        gui.open(player);
+    }
+
+    public static void viewAdminContext(Player player, int backPage, Report report) {
+        NormalGUI gui = new NormalGUI(DyChatReportExtensionPlugin.getInstance(), NormalGUI.Type.NORMAL_3X9, Lang.lang(player, "gui.reports.message.title", report.getReporterName(), Lang.lang(player, report.isApproached() ? "gui.reports.item.approved.prefix" : "gui.reports.item.unapproved.prefix", report.getCreateDateString())));
+        gui.fill(OUTLINE_IMAGE);
+        gui.setItem(0, new Button() {
+            @Override
+            public void click(Player viewer, Inventory inventory, ClickType type, InventoryAction action) {
+                viewer.closeInventory();
+                if (report.isApproached()) {
+                    openAdminSingleReportSolved(player, backPage, report);
+                } else {
+                    openAdminSingleReportUnsolved(player, backPage, report);
+                }
+                gui.drop();
+            }
+
+            @Override
+            public ItemStack draw(Player viewer, Inventory inventory) {
+                ItemStack itemStack = new ItemStack(Material.RED_STAINED_GLASS_PANE);
+                ItemMeta itemMeta = itemStack.getItemMeta();
+                if (itemMeta != null) {
+                    itemMeta.setDisplayName(Lang.lang(viewer, "gui.reports.button.back"));
+                    itemStack.setItemMeta(itemMeta);
+                }
+                return itemStack;
+            }
+        });
+        gui.setItem(13, (Image) (viewer, inventory) -> {
+            ItemStack itemStack = new ItemStack(Material.PAPER);
+            ItemMeta itemMeta = itemStack.getItemMeta();
+            if (itemMeta != null) {
+                itemMeta.setDisplayName(Lang.lang(viewer, "gui.reports.report.item.message.display"));
+                List<String> lore = new ArrayList<>();
+                int index = DynamicChatManager.getMessageIndex(((MessageReport) report).getId());
+                if (index > DynamicChatManager.messages() || index < 0) {
+                    lore.add("§f" + report.getSuspectName() + ": " + ColorUtils.processChatColor(ColorUtils.processGradientColor(((MessageReport) report).getMessage())));
+                } else {
+                    for (int i = Math.max(0, index - 20); i < index; i++) {
+                        System.out.println("A " + i);
+                        MuteMessage message = DynamicChatManager.getMessage(i);
+                        lore.add("§f" + message.getSenderName() + ": " + ColorUtils.processChatColor(ColorUtils.processGradientColor((message.getContent()))));
+                    }
+                    for (int i = index; i < Math.min(index + 20, DynamicChatManager.messages()); i++) {
+                        System.out.println("B " + i);
+                        MuteMessage message = DynamicChatManager.getMessage(i);
+                        lore.add("§f" + message.getSenderName() + ": " + ColorUtils.processChatColor(ColorUtils.processGradientColor((message.getContent()))));
+                    }
+                }
+                itemMeta.setLore(lore);
+                itemStack.setItemMeta(itemMeta);
+            }
+            return itemStack;
         });
         gui.open(player);
     }

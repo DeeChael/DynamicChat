@@ -118,6 +118,7 @@ public final class CommandReport extends Command {
                                     }
                                 }
                                 ReportManager.report(viewer, suspect, reason);
+                                Lang.send(viewer, "command.report.success", suspect.getName());
                                 viewer.closeInventory();
                             }
 

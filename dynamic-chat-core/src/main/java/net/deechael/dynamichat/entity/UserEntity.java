@@ -11,6 +11,7 @@ import net.deechael.dynamichat.feature.Filter;
 import net.deechael.dynamichat.placeholder.DynamicChatPlaceholder;
 import net.deechael.dynamichat.util.*;
 import net.deechael.useless.objs.TriObj;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -35,6 +36,21 @@ public abstract class UserEntity implements User {
     public UserEntity(CommandSender sender) {
         this.sender = sender;
         this.current = (ChannelEntity) ChatManager.getManager().getGlobal();
+    }
+
+    @Override
+    public void sendMessage(String message) {
+        this.getSender().sendMessage(message);
+    }
+
+    @Override
+    public void sendMessage(BaseComponent... components) {
+        this.getSender().spigot().sendMessage(components);
+    }
+
+    @Override
+    public void sendMessage(ComponentBuilder builder) {
+        this.getSender().spigot().sendMessage(builder.create());
     }
 
     @Override

@@ -44,6 +44,12 @@ public class NormalGUI implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
+    public void dropOnClose() {
+        this.onClose = (player, inventory) -> {
+            this.drop();
+        };
+    }
+
     public void setOnClose(DuParameter<Player, Inventory> onClose) {
         this.onClose = onClose;
     }

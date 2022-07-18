@@ -1,5 +1,7 @@
 package net.deechael.dynamichat.api;
 
+import java.util.Date;
+
 public interface MuteMessage {
 
     String getSenderName();
@@ -7,5 +9,7 @@ public interface MuteMessage {
     String getContent();
 
     String getId();
+
+    Date getSendTime();
 
 }

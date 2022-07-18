@@ -2,6 +2,7 @@ package net.deechael.dynamichat.entity;
 
 import net.deechael.dynamichat.DyChatPlugin;
 import net.deechael.dynamichat.api.*;
+import net.deechael.dynamichat.object.Time;
 import net.deechael.dynamichat.sql.Sqlite;
 import net.deechael.dynamichat.util.ConfigUtils;
 import net.deechael.dynamichat.util.StringUtils;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class DynamicChatManager extends ChatManager {
@@ -40,8 +42,8 @@ public class DynamicChatManager extends ChatManager {
         global.setDisplayName(ConfigUtils.globalChannelDisplayName());
     }
 
-    public static void quit(Player player) {
-        ((DynamicChatManager) ChatManager.getManager()).userMap.remove(player);
+    public static boolean quit(Player player) {
+        return ((DynamicChatManager) ChatManager.getManager()).userMap.remove(player) != null;
     }
 
     public static DynamicChatManager getChatManager() {
@@ -56,7 +58,7 @@ public class DynamicChatManager extends ChatManager {
         while (getChatManager().recordKeys.contains(key)) {
             key = StringUtils.random64();
         }
-        Message messageEntity = new MessageEntity(user, message, key);
+        Message messageEntity = new MessageEntity(user, message, key, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         getChatManager().recordKeys.add(key);
         getChatManager().records.add(new AbstractMap.SimpleEntry<>(key, messageEntity));
         getChatManager().chatCaches.put(key, messageEntity);
@@ -82,15 +84,16 @@ public class DynamicChatManager extends ChatManager {
         getChatManager().records.clear();
         getChatManager().recordKeys.clear();
         getChatManager().sqlite = new Sqlite(dbFile);
-        getChatManager().sqlite.executeUpdate("CREATE TABLE IF NOT EXISTS `messages` ( `msg_id` TEXT , `sender` TEXT , `content` TEXT);");
+        getChatManager().sqlite.executeUpdate("CREATE TABLE IF NOT EXISTS `messages` ( `msg_id` TEXT , `sender` TEXT , `content` TEXT, `time` TEXT);");
         ResultSet resultSet = getChatManager().sqlite.executeQuery("SELECT * FROM `messages`;");
         try {
             while (resultSet.next()) {
                 String id = resultSet.getString("msg_id");
                 String sender = resultSet.getString("sender");
-                String content = resultSet.getString("content").replaceAll("\\\\'", "'");
+                String content = resultSet.getString("content");
+                String time = resultSet.getString("time");
                 getChatManager().recordKeys.add(id);
-                getChatManager().records.add(new AbstractMap.SimpleEntry<>(id, new MuteMessageEntity(sender, content, id)));
+                getChatManager().records.add(new AbstractMap.SimpleEntry<>(id, new MuteMessageEntity(sender, content, id, time)));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -133,11 +136,12 @@ public class DynamicChatManager extends ChatManager {
     }
 
     public static void addRecord(MuteMessage message) {
-        PreparedStatement preparedStatement = getChatManager().sqlite.preparedStatement("INSERT INTO `messages` (`msg_id`, `sender`, `content`) VALUES (?, ?, ?);");
+        PreparedStatement preparedStatement = getChatManager().sqlite.preparedStatement("INSERT INTO `messages` (`msg_id`, `sender`, `content`, `time`) VALUES (?, ?, ?, ?);");
         try {
             preparedStatement.setString(1, message.getId());
             preparedStatement.setString(2, message.getSenderName());
             preparedStatement.setString(3, message.getContent());
+            preparedStatement.setString(4, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(message.getSendTime()));
             preparedStatement.executeUpdate();
             preparedStatement.close();
         } catch (SQLException e) {
@@ -253,6 +257,70 @@ public class DynamicChatManager extends ChatManager {
     @Override
     public String getDefaultLanguage() {
         return ConfigUtils.lang();
+    }
+
+    @Override
+    public int getIndex(MuteMessage message) {
+        if (!recordKeys.contains(message.getId()))
+            return -1;
+        return recordKeys.indexOf(message.getId());
+    }
+
+    @Override
+    public MuteMessage getMessageByIndex(int index) {
+        if (index >= records.size())
+            throw new IndexOutOfBoundsException("Cannot find the message");
+        return records.get(index).getValue();
+    }
+
+    @Override
+    public MuteMessage getMessageById(String id) {
+        if (!recordKeys.contains(id))
+            throw new RuntimeException("Cannot find the message");
+        return records.get(recordKeys.indexOf(id)).getValue();
+    }
+
+    @Override
+    public Context getContext(int startIndex, int endIndex) {
+        if (startIndex > endIndex)
+            throw new RuntimeException("End index cannot be lower than start index");
+        if (!(startIndex >= 0))
+            throw new IndexOutOfBoundsException("Index cannot be lower than 0");
+        if (startIndex >= records.size())
+            throw new IndexOutOfBoundsException("Cannot locate the context");
+        if (endIndex >= records.size())
+            throw new IndexOutOfBoundsException("Cannot locate the context");
+        List<MuteMessage> messages = new ArrayList<>();
+        for (int i = startIndex; i < endIndex; i++) {
+            messages.add(records.get(i).getValue());
+        }
+        return new ContextEntity(messages);
+    }
+
+    @Override
+    public Context getContext(MuteMessage startMessage, int amount) {
+        int index = getIndex(startMessage);
+        return this.getContext(index, index + amount);
+    }
+
+    @Override
+    public int recordedMessages() {
+        return records.size();
+    }
+
+    @Override
+    public Time createTime(int years, int months, int weeks, int days, int hours, int minutes, int seconds) {
+        return new TimeEntity(years, months, weeks, days, hours, minutes, seconds);
+    }
+
+    @Override
+    public Time createTime(long seconds) {
+        return new TimeEntity(seconds);
+    }
+
+    @Override
+    public Time parseTime(String timeString) {
+        return TimeEntity.of(timeString);
     }
 
 }

@@ -57,6 +57,7 @@ public final class GUIUtils {
             page = pages;
         int finalPage = page;
         NormalGUI gui = new NormalGUI(DyChatReportExtensionPlugin.getInstance(), NormalGUI.Type.NORMAL_6X9, Lang.lang(player, "gui.reports.title", page, pages));
+        gui.dropOnClose();
         outline.forEach(i -> gui.setItem(i, OUTLINE_IMAGE));
         if (reports.size() <= 28) {
             for (int i = 0; i < reports.size(); i++) {
@@ -206,6 +207,7 @@ public final class GUIUtils {
 
     public static void openSingleReport(Player player, int backPage, Report report) {
         NormalGUI gui = new NormalGUI(DyChatReportExtensionPlugin.getInstance(), NormalGUI.Type.NORMAL_3X9, Lang.lang(player, "gui.reports.report.title", Lang.lang(player, report.isApproached() ? "gui.reports.item.approved.prefix" : "gui.reports.item.unapproved.prefix", report.getCreateDateString())));
+        gui.dropOnClose();
         gui.fill(OUTLINE_IMAGE);
         gui.setItem(0, new Button() {
             @Override
@@ -353,6 +355,7 @@ public final class GUIUtils {
             page = pages;
         int finalPage = page;
         NormalGUI gui = new NormalGUI(DyChatReportExtensionPlugin.getInstance(), NormalGUI.Type.NORMAL_6X9, Lang.lang(player, "gui.admin.title", page, pages));
+        gui.dropOnClose();
         outline.forEach(i -> gui.setItem(i, OUTLINE_IMAGE));
         if (reports.size() <= 28) {
             for (int i = 0; i < reports.size(); i++) {
@@ -510,6 +513,7 @@ public final class GUIUtils {
 
     public static void openAdminSingleReportUnsolved(Player player, int backPage, Report report) {
         NormalGUI gui = new NormalGUI(DyChatReportExtensionPlugin.getInstance(), NormalGUI.Type.NORMAL_5X9, Lang.lang(player, "gui.reports.report.admin.title", report.getReporterName(), Lang.lang(player, report.isApproached() ? "gui.reports.item.approved.prefix" : "gui.reports.item.unapproved.prefix", report.getCreateDateString())));
+        gui.dropOnClose();
         gui.fill(OUTLINE_IMAGE);
         gui.setItem(0, new Button() {
             @Override
@@ -639,6 +643,7 @@ public final class GUIUtils {
 
     public static void openAdminSingleReportSolved(Player player, int backPage, Report report) {
         NormalGUI gui = new NormalGUI(DyChatReportExtensionPlugin.getInstance(), NormalGUI.Type.NORMAL_3X9, Lang.lang(player, "gui.reports.report.admin.title", report.getReporterName(), Lang.lang(player, report.isApproached() ? "gui.reports.item.approved.prefix" : "gui.reports.item.unapproved.prefix", report.getCreateDateString())));
+        gui.dropOnClose();
         gui.fill(OUTLINE_IMAGE);
         gui.setItem(0, new Button() {
             @Override
@@ -759,6 +764,7 @@ public final class GUIUtils {
 
     public static void approveReport(Player player, int page, Report report) {
         AnvilGUI gui = new AnvilGUI(DyChatReportExtensionPlugin.getInstance());
+        gui.dropOnClose();
         gui.setItem(AnvilGUI.AnvilSlot.LEFT_INPUT, (Image) (viewer, inventory) -> {
             ItemStack itemStack = new ItemStack(Material.PAPER);
             ItemMeta itemMeta = itemStack.getItemMeta();
@@ -805,6 +811,7 @@ public final class GUIUtils {
 
     public static void viewContext(Player player, int backPage, Report report) {
         NormalGUI gui = new NormalGUI(DyChatReportExtensionPlugin.getInstance(), NormalGUI.Type.NORMAL_3X9, Lang.lang(player, "gui.reports.message.title", report.getReporterName(), Lang.lang(player, report.isApproached() ? "gui.reports.item.approved.prefix" : "gui.reports.item.unapproved.prefix", report.getCreateDateString())));
+        gui.dropOnClose();
         gui.fill(OUTLINE_IMAGE);
         gui.setItem(0, new Button() {
             @Override
@@ -854,6 +861,7 @@ public final class GUIUtils {
 
     public static void viewAdminContext(Player player, int backPage, Report report) {
         NormalGUI gui = new NormalGUI(DyChatReportExtensionPlugin.getInstance(), NormalGUI.Type.NORMAL_3X9, Lang.lang(player, "gui.reports.message.title", report.getReporterName(), Lang.lang(player, report.isApproached() ? "gui.reports.item.approved.prefix" : "gui.reports.item.unapproved.prefix", report.getCreateDateString())));
+        gui.dropOnClose();
         gui.fill(OUTLINE_IMAGE);
         gui.setItem(0, new Button() {
             @Override

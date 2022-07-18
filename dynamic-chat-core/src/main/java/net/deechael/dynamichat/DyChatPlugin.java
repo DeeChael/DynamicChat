@@ -5,19 +5,23 @@ import net.deechael.dynamichat.command.EzArgument;
 import net.deechael.dynamichat.command.EzCommand;
 import net.deechael.dynamichat.command.EzCommandManager;
 import net.deechael.dynamichat.command.argument.ArgumentChat;
+import net.deechael.dynamichat.command.argument.ArgumentOfflinePlayer;
+import net.deechael.dynamichat.command.argument.ArgumentPlayer;
 import net.deechael.dynamichat.command.argument.BaseArguments;
 import net.deechael.dynamichat.entity.ChannelEntity;
 import net.deechael.dynamichat.entity.DynamicChatManager;
+import net.deechael.dynamichat.entity.TimeEntity;
 import net.deechael.dynamichat.entity.UserEntity;
+import net.deechael.dynamichat.exception.TimeParseException;
 import net.deechael.dynamichat.gui.AnvilGUI;
 import net.deechael.dynamichat.gui.AnvilOutputImage;
 import net.deechael.dynamichat.gui.Image;
+import net.deechael.dynamichat.object.Time;
 import net.deechael.dynamichat.placeholder.DynamicChatPlaceholder;
 import net.deechael.dynamichat.temp.DynamicChatListener;
 import net.deechael.dynamichat.temp.NMSCommandKiller;
-import net.deechael.dynamichat.util.ConfigUtils;
-import net.deechael.dynamichat.util.Lang;
-import net.deechael.dynamichat.util.PlayerUtils;
+import net.deechael.dynamichat.util.*;
+import net.deechael.useless.objs.FoObj;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -25,6 +29,7 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -32,6 +37,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -72,6 +78,152 @@ public class DyChatPlugin extends JavaPlugin {
                 return Lang.lang(clicker, "message.button.copy.hover");
             }
 
+        });
+        ChatManager.getManager().registerButton(3, new MessageButton() {
+            @Override
+            public String display(CommandSender clicker, Message message) {
+                if (ExtensionUtils.enabledMuteAndBanExtension()) {
+                    if (clicker.hasPermission("dynamichat.mnb.mute")) {
+                        Player player = (Player) clicker;
+                        return Lang.lang(player, "extension.mute-and-ban.button.mute.display");
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            public void click(CommandSender clicker, Message message) {
+                if (clicker instanceof Player player) {
+                    if (message.getSender().getSender() instanceof Player bePunished) {
+                        if (clicker.hasPermission("dynamichat.mnb.mute")) {
+                            if (player.getUniqueId() == bePunished.getUniqueId()) {
+                                Lang.send(clicker, "extension.mute-and-ban.command.mute.notself");
+                            } else {
+                                if (MuteNBanManager.isNowMuted(bePunished).getFirst()) {
+                                    Lang.send(clicker, "extension.mute-and-ban.command.mute.failed", player.getName());
+                                } else {
+                                    MNBGUIUtils.openSetTime(player, bePunished, 0, (punish, reason, timeLong) -> {
+                                        if (timeLong == 0) {
+                                            MuteNBanManager.addMuted(clicker.getName(), punish, null, reason);
+                                            if (punish.isOnline()) {
+                                                FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowMuted(punish);
+                                                Lang.send(punish, "extension.mute-and-ban.message.muted.forever", obj.getFourth(), obj.getSecond());
+                                            }
+                                        } else {
+                                            Time time = new TimeEntity(timeLong);
+                                            MuteNBanManager.addMuted(clicker.getName(), punish, time.after(new Date()), reason);
+                                            if (punish.isOnline()) {
+                                                FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowMuted(punish);
+                                                Lang.send(punish, "extension.mute-and-ban.message.muted.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond());
+                                            }
+                                        }
+                                        Lang.send(clicker, "extension.mute-and-ban.command.mute.success", punish.getName());
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public String hover(CommandSender clicker, Message message) {
+                Player player = (Player) clicker;
+                return Lang.lang(player, "extension.mute-and-ban.button.mute.hover");
+            }
+        });
+        ChatManager.getManager().registerButton(4, new MessageButton() {
+            @Override
+            public String display(CommandSender clicker, Message message) {
+                if (ExtensionUtils.enabledMuteAndBanExtension()) {
+                    if (clicker.hasPermission("dynamichat.mnb.kick")) {
+                        Player player = (Player) clicker;
+                        return Lang.lang(player, "extension.mute-and-ban.button.kick.display");
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            public void click(CommandSender clicker, Message message) {
+                if (clicker instanceof Player player) {
+                    if (message.getSender().getSender() instanceof Player bePunished) {
+                        if (clicker.hasPermission("dynamichat.mnb.kick")) {
+                            if (player.getUniqueId() == bePunished.getUniqueId()) {
+                                Lang.send(clicker, "extension.mute-and-ban.command.kick.notself");
+                            } else {
+                                if (MuteNBanManager.isNowBanned(bePunished).getFirst()) {
+                                    Lang.send(clicker, "extension.mute-and-ban.command.ban.failed", player.getName());
+                                } else {
+                                    MNBGUIUtils.openReason(player, bePunished, 0, (punish, reason, timeLong) -> {
+                                        message.getSender().kick(reason);
+                                        Lang.send(clicker, "extension.mute-and-ban.command.kick.success", punish.getName());
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public String hover(CommandSender clicker, Message message) {
+                Player player = (Player) clicker;
+                return Lang.lang(player, "extension.mute-and-ban.button.kick.hover");
+            }
+        });
+        ChatManager.getManager().registerButton(5, new MessageButton() {
+            @Override
+            public String display(CommandSender clicker, Message message) {
+                if (ExtensionUtils.enabledMuteAndBanExtension()) {
+                    if (clicker.hasPermission("dynamichat.mnb.ban")) {
+                        Player player = (Player) clicker;
+                        return Lang.lang(player, "extension.mute-and-ban.button.ban.display");
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            public void click(CommandSender clicker, Message message) {
+                if (clicker instanceof Player player) {
+                    if (message.getSender().getSender() instanceof Player bePunished) {
+                        if (clicker.hasPermission("dynamichat.mnb.ban")) {
+                            if (player.getUniqueId() == bePunished.getUniqueId()) {
+                                Lang.send(clicker, "extension.mute-and-ban.command.ban.notself");
+                            } else {
+                                if (MuteNBanManager.isNowBanned(bePunished).getFirst()) {
+                                    Lang.send(clicker, "extension.mute-and-ban.command.ban.failed", player.getName());
+                                } else {
+                                    MNBGUIUtils.openSetTime(player, bePunished, 0, (punish, reason, timeLong) -> {
+                                        if (timeLong == 0) {
+                                            MuteNBanManager.addBanned(clicker.getName(), punish, null, reason);
+                                            if (punish.isOnline()) {
+                                                FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowBanned(punish);
+                                                punish.kickPlayer(Lang.lang(punish, "extension.mute-and-ban.message.banned.forever", obj.getFourth(), obj.getSecond()));
+                                            }
+                                        } else {
+                                            Time time = new TimeEntity(timeLong);
+                                            MuteNBanManager.addBanned(clicker.getName(), punish, time.after(new Date()), reason);
+                                            if (punish.isOnline()) {
+                                                FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowBanned(punish);
+                                                punish.kickPlayer(Lang.lang(punish, "extension.mute-and-ban.message.banned.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond()));
+                                            }
+                                        }
+                                        Lang.send(clicker, "extension.mute-and-ban.command.ban.success", punish.getName());
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public String hover(CommandSender clicker, Message message) {
+                Player player = (Player) clicker;
+                return Lang.lang(player, "extension.mute-and-ban.button.ban.hover");
+            }
         });
         EzCommand mainCommand = new EzCommand("dynamic-chat", "dynamichat.command.dynamic-chat", PermissionDefault.OP).executes((sender, helper) -> {
             Lang.send(sender, "command.gotohelp");
@@ -425,6 +577,449 @@ public class DyChatPlugin extends JavaPlugin {
                                 }))
                         )
                 ))
+        );
+
+
+        // Extension Command
+        EzCommandManager.register("dynamichat", new EzCommand("kick", "dynamichat.mnb.kick", PermissionDefault.OP)
+                .then(new EzArgument(ArgumentPlayer.argumentType(), "target")
+                        .then(new EzArgument(ArgumentChat.argumentType(), "reason")
+                                .executes((sender, helper) -> {
+                                    List<Player> players = helper.getAsPlayers("target");
+                                    String reason = helper.getAsChatMessage("reason");
+                                    boolean isPlayer = sender instanceof Player;
+                                    Player senderPlayer = isPlayer ? (Player) sender : null;
+                                    for (Player player : players) {
+                                        if (isPlayer) {
+                                            if (senderPlayer.getUniqueId() == player.getUniqueId()) {
+                                                Lang.send(sender, "extension.mute-and-ban.command.kick.notself");
+                                                continue;
+                                            }
+                                        }
+                                        ChatManager.getManager().getUser(player).kick(reason);
+                                        Lang.send(sender, "extension.mute-and-ban.command.kick.success", player.getName());
+                                    }
+                                    return 1;
+                                })
+                        )
+                        .executes((sender, helper) -> {
+                            List<Player> players = helper.getAsPlayers("target");
+                            boolean isPlayer = sender instanceof Player;
+                            Player senderPlayer = isPlayer ? (Player) sender : null;
+                            for (Player player : players) {
+                                if (isPlayer) {
+                                    if (senderPlayer.getUniqueId() == player.getUniqueId()) {
+                                        Lang.send(sender, "extension.mute-and-ban.command.kick.notself");
+                                        continue;
+                                    }
+                                }
+                                ChatManager.getManager().getUser(player).kick();
+                                Lang.send(sender, "extension.mute-and-ban.command.kick.success", player.getName());
+                            }
+                            return 1;
+                        })
+                )
+        );
+        EzCommandManager.register("dynamichat", new EzCommand("ban", "dynamichat.mnb.ban", PermissionDefault.OP)
+                .then(new EzArgument(ArgumentOfflinePlayer.argumentType(), "target")
+                        .then(new EzArgument(BaseArguments.string(), "time")
+                                .then(new EzArgument(ArgumentChat.argumentType(), "reason")
+                                        .executes((sender, helper) -> {
+                                            if (!ExtensionUtils.enabledMuteAndBanExtension()) {
+                                                Lang.send(sender, "command.extensionrequired");
+                                                return 1;
+                                            }
+                                            List<OfflinePlayer> players = helper.getAsOfflinePlayer("target");
+                                            String reason = helper.getAsChatMessage("reason");
+                                            try {
+                                                Time time = TimeEntity.of(helper.getAsString("time"));
+                                                boolean isPlayer = sender instanceof Player;
+                                                Player senderPlayer = isPlayer ? (Player) sender : null;
+                                                for (OfflinePlayer player : players) {
+                                                    if (isPlayer) {
+                                                        if (senderPlayer.getUniqueId() == player.getUniqueId()) {
+                                                            Lang.send(sender, "extension.mute-and-ban.command.ban.notself");
+                                                            continue;
+                                                        }
+                                                    }
+                                                    if (MuteNBanManager.isNowBanned(player).getFirst()) {
+                                                        Lang.send(sender, "extension.mute-and-ban.command.ban.failed", player.getName());
+                                                    } else {
+                                                        MuteNBanManager.addBanned(sender.getName(), player, time.after(new Date()), reason);
+                                                        if (player.isOnline()) {
+                                                            FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowBanned(player);
+                                                            ((Player) player).kickPlayer(Lang.lang(((Player) player), "extension.mute-and-ban.message.banned.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond()));
+                                                        }
+                                                        Lang.send(sender, "extension.mute-and-ban.command.ban.success", player.getName());
+                                                    }
+                                                }
+                                            } catch (TimeParseException e) {
+                                                Lang.send(sender, "extension.mute-and-ban.command.ban.time-format");
+                                            }
+                                            return 1;
+                                        }))
+                                .executes((sender, helper) -> {
+                                    if (!ExtensionUtils.enabledMuteAndBanExtension()) {
+                                        Lang.send(sender, "command.extensionrequired");
+                                        return 1;
+                                    }
+                                    List<OfflinePlayer> players = helper.getAsOfflinePlayer("target");
+                                    try {
+                                        Time time = TimeEntity.of(helper.getAsString("time"));
+                                        boolean isPlayer = sender instanceof Player;
+                                        Player senderPlayer = isPlayer ? (Player) sender : null;
+                                        for (OfflinePlayer player : players) {
+                                            if (isPlayer) {
+                                                if (senderPlayer.getUniqueId() == player.getUniqueId()) {
+                                                    Lang.send(sender, "extension.mute-and-ban.command.ban.notself");
+                                                    continue;
+                                                }
+                                            }
+                                            if (MuteNBanManager.isNowBanned(player).getFirst()) {
+                                                Lang.send(sender, "extension.mute-and-ban.command.ban.failed", player.getName());
+                                            } else {
+                                                MuteNBanManager.addBanned(sender.getName(), player, time.after(new Date()), Lang.lang(sender, "extension.mute-and-ban.default.no-reason"));
+                                                if (player.isOnline()) {
+                                                    FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowBanned(player);
+                                                    ((Player) player).kickPlayer(Lang.lang(((Player) player), "extension.mute-and-ban.message.banned.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond()));
+                                                }
+                                                Lang.send(sender, "extension.mute-and-ban.command.ban.success", player.getName());
+                                            }
+                                        }
+                                    } catch (TimeParseException e) {
+                                        Lang.send(sender, "extension.mute-and-ban.command.ban.time-format");
+                                    }
+                                    return 1;
+                                }))
+                        .then(new EzCommand("forever")
+                                .then(new EzArgument(ArgumentChat.argumentType(), "reason")
+                                        .executes((sender, helper) -> {
+                                            if (!ExtensionUtils.enabledMuteAndBanExtension()) {
+                                                Lang.send(sender, "command.extensionrequired");
+                                                return 1;
+                                            }
+                                            List<OfflinePlayer> players = helper.getAsOfflinePlayer("target");
+                                            String reason = helper.getAsChatMessage("reason");
+                                            boolean isPlayer = sender instanceof Player;
+                                            Player senderPlayer = isPlayer ? (Player) sender : null;
+                                            for (OfflinePlayer player : players) {
+                                                if (isPlayer) {
+                                                    if (senderPlayer.getUniqueId() == player.getUniqueId()) {
+                                                        Lang.send(sender, "extension.mute-and-ban.command.ban.notself");
+                                                        continue;
+                                                    }
+                                                }
+                                                if (MuteNBanManager.isNowBanned(player).getFirst()) {
+                                                    Lang.send(sender, "extension.mute-and-ban.command.ban.failed", player.getName());
+                                                } else {
+                                                    MuteNBanManager.addBanned(sender.getName(), player, null, reason);
+                                                    if (player.isOnline()) {
+                                                        FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowBanned(player);
+                                                        Date date = obj.getThird();
+                                                        if (date != null) {
+                                                            Time time = ChatManager.getManager().createTime((date.getTime() - new Date().getTime()) / 1000L);
+                                                            ((Player) player).kickPlayer(Lang.lang(((Player) player), "extension.mute-and-ban.message.banned.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond()));
+                                                        } else {
+                                                            ((Player) player).kickPlayer(Lang.lang(((Player) player), "extension.mute-and-ban.message.banned.forever", obj.getFourth(), obj.getSecond()));
+                                                        }
+                                                    }
+                                                    Lang.send(sender, "extension.mute-and-ban.command.ban.success", player.getName());
+                                                }
+                                            }
+                                            return 1;
+                                        }))
+                                .executes((sender, helper) -> {
+                                    if (!ExtensionUtils.enabledMuteAndBanExtension()) {
+                                        Lang.send(sender, "command.extensionrequired");
+                                        return 1;
+                                    }
+                                    List<OfflinePlayer> players = helper.getAsOfflinePlayer("target");
+                                    boolean isPlayer = sender instanceof Player;
+                                    Player senderPlayer = isPlayer ? (Player) sender : null;
+                                    for (OfflinePlayer player : players) {
+                                        if (isPlayer) {
+                                            if (senderPlayer.getUniqueId() == player.getUniqueId()) {
+                                                Lang.send(sender, "extension.mute-and-ban.command.ban.notself");
+                                                continue;
+                                            }
+                                        }
+                                        if (MuteNBanManager.isNowBanned(player).getFirst()) {
+                                            Lang.send(sender, "extension.mute-and-ban.command.ban.failed", player.getName());
+                                        } else {
+                                            MuteNBanManager.addBanned(sender.getName(), player, null, Lang.lang(sender, "extension.mute-and-ban.default.no-reason"));
+                                            if (player.isOnline()) {
+                                                FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowBanned(player);
+                                                Date date = obj.getThird();
+                                                if (date != null) {
+                                                    Time time = ChatManager.getManager().createTime((date.getTime() - new Date().getTime()) / 1000L);
+                                                    ((Player) player).kickPlayer(Lang.lang(((Player) player), "extension.mute-and-ban.message.banned.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond()));
+                                                } else {
+                                                    ((Player) player).kickPlayer(Lang.lang(((Player) player), "extension.mute-and-ban.message.banned.forever", obj.getFourth(), obj.getSecond()));
+                                                }
+                                            }
+                                            Lang.send(sender, "extension.mute-and-ban.command.ban.success", player.getName());
+                                        }
+                                    }
+                                    return 1;
+                                }))
+                        .executes((sender, helper) -> {
+                            if (!ExtensionUtils.enabledMuteAndBanExtension()) {
+                                Lang.send(sender, "command.extensionrequired");
+                                return 1;
+                            }
+                            List<OfflinePlayer> players = helper.getAsOfflinePlayer("target");
+                            boolean isPlayer = sender instanceof Player;
+                            Player senderPlayer = isPlayer ? (Player) sender : null;
+                            for (OfflinePlayer player : players) {
+                                if (isPlayer) {
+                                    if (senderPlayer.getUniqueId() == player.getUniqueId()) {
+                                        Lang.send(sender, "extension.mute-and-ban.command.ban.notself");
+                                        continue;
+                                    }
+                                }
+                                if (MuteNBanManager.isNowBanned(player).getFirst()) {
+                                    Lang.send(sender, "extension.mute-and-ban.command.ban.failed", player.getName());
+                                } else {
+                                    MuteNBanManager.addBanned(sender.getName(), player, null, Lang.lang(sender, "extension.mute-and-ban.default.no-reason"));
+                                    if (player.isOnline()) {
+                                        FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowBanned(player);
+                                        Date date = obj.getThird();
+                                        if (date != null) {
+                                            Time time = ChatManager.getManager().createTime((date.getTime() - new Date().getTime()) / 1000L);
+                                            ((Player) player).kickPlayer(Lang.lang(((Player) player), "extension.mute-and-ban.message.banned.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond()));
+                                        } else {
+                                            ((Player) player).kickPlayer(Lang.lang(((Player) player), "extension.mute-and-ban.message.banned.forever", obj.getFourth(), obj.getSecond()));
+                                        }
+                                    }
+                                    Lang.send(sender, "extension.mute-and-ban.command.ban.success", player.getName());
+                                }
+                            }
+                            return 1;
+                        })
+                )
+        );
+        EzCommandManager.register("dynamichat", new EzCommand("unban", "dynamichat.mnb.unban", PermissionDefault.OP)
+                .then(new EzArgument(ArgumentOfflinePlayer.argumentType(), "target")
+                        .executes((sender, helper) -> {
+                            if (!ExtensionUtils.enabledMuteAndBanExtension()) {
+                                Lang.send(sender, "command.extensionrequired");
+                                return 1;
+                            }
+                            List<OfflinePlayer> players = helper.getAsOfflinePlayer("target");
+                            for (OfflinePlayer player : players) {
+                                FoObj<Boolean, String, Date, String> bannedInformation = MuteNBanManager.isNowBanned(player);
+                                if (!bannedInformation.getFirst()) {
+                                    Lang.send(sender, "extension.mute-and-ban.command.unban.failed", player.getName());
+                                } else {
+                                    MuteNBanManager.unbanned(player, bannedInformation.getFourth());
+                                    Lang.send(sender, "extension.mute-and-ban.command.unban.success", player.getName());
+                                }
+                            }
+                            return 1;
+                        })
+                )
+        );
+        EzCommandManager.register("dynamichat", new EzCommand("mute", "dynamichat.mnb.mute", PermissionDefault.OP)
+                .then(new EzArgument(ArgumentOfflinePlayer.argumentType(), "target")
+                        .then(new EzArgument(BaseArguments.string(), "time")
+                                .then(new EzArgument(ArgumentChat.argumentType(), "reason")
+                                        .executes((sender, helper) -> {
+                                            if (!ExtensionUtils.enabledMuteAndBanExtension()) {
+                                                Lang.send(sender, "command.extensionrequired");
+                                                return 1;
+                                            }
+                                            List<OfflinePlayer> players = helper.getAsOfflinePlayer("target");
+                                            String reason = helper.getAsChatMessage("reason");
+                                            try {
+                                                Time time = TimeEntity.of(helper.getAsString("time"));
+                                                boolean isPlayer = sender instanceof Player;
+                                                Player senderPlayer = isPlayer ? (Player) sender : null;
+                                                for (OfflinePlayer player : players) {
+                                                    if (isPlayer) {
+                                                        if (senderPlayer.getUniqueId() == player.getUniqueId()) {
+                                                            Lang.send(sender, "extension.mute-and-ban.command.mute.notself");
+                                                            continue;
+                                                        }
+                                                    }
+                                                    if (MuteNBanManager.isNowMuted(player).getFirst()) {
+                                                        Lang.send(sender, "extension.mute-and-ban.command.mute.failed", player.getName());
+                                                    } else {
+                                                        MuteNBanManager.addMuted(sender.getName(), player, time.after(new Date()), reason);
+                                                        if (player.isOnline()) {
+                                                            FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowMuted(player);
+                                                            Lang.send(((Player) player), "extension.mute-and-ban.message.muted.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond());
+                                                        }
+                                                        Lang.send(sender, "extension.mute-and-ban.command.mute.success", player.getName());
+                                                    }
+                                                }
+                                            } catch (TimeParseException e) {
+                                                Lang.send(sender, "extension.mute-and-ban.command.mute.time-format");
+                                            }
+                                            return 1;
+                                        }))
+                                .executes((sender, helper) -> {
+                                    if (!ExtensionUtils.enabledMuteAndBanExtension()) {
+                                        Lang.send(sender, "command.extensionrequired");
+                                        return 1;
+                                    }
+                                    List<OfflinePlayer> players = helper.getAsOfflinePlayer("target");
+                                    try {
+                                        Time time = TimeEntity.of(helper.getAsString("time"));
+                                        boolean isPlayer = sender instanceof Player;
+                                        Player senderPlayer = isPlayer ? (Player) sender : null;
+                                        for (OfflinePlayer player : players) {
+                                            if (isPlayer) {
+                                                if (senderPlayer.getUniqueId() == player.getUniqueId()) {
+                                                    Lang.send(sender, "extension.mute-and-ban.command.mute.notself");
+                                                    continue;
+                                                }
+                                            }
+                                            if (MuteNBanManager.isNowMuted(player).getFirst()) {
+                                                Lang.send(sender, "extension.mute-and-ban.command.mute.failed", player.getName());
+                                            } else {
+                                                MuteNBanManager.addMuted(sender.getName(), player, time.after(new Date()), Lang.lang(sender, "extension.mute-and-ban.default.no-reason"));
+                                                if (player.isOnline()) {
+                                                    FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowMuted(player);
+                                                    Lang.send(((Player) player), "extension.mute-and-ban.message.muted.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond());
+                                                }
+                                                Lang.send(sender, "extension.mute-and-ban.command.mute.success", player.getName());
+                                            }
+                                        }
+                                    } catch (TimeParseException e) {
+                                        Lang.send(sender, "extension.mute-and-ban.command.mute.time-format");
+                                    }
+                                    return 1;
+                                }))
+                        .then(new EzCommand("forever")
+                                .then(new EzArgument(ArgumentChat.argumentType(), "reason")
+                                        .executes((sender, helper) -> {
+                                            if (!ExtensionUtils.enabledMuteAndBanExtension()) {
+                                                Lang.send(sender, "command.extensionrequired");
+                                                return 1;
+                                            }
+                                            List<OfflinePlayer> players = helper.getAsOfflinePlayer("target");
+                                            String reason = helper.getAsChatMessage("reason");
+                                            boolean isPlayer = sender instanceof Player;
+                                            Player senderPlayer = isPlayer ? (Player) sender : null;
+                                            for (OfflinePlayer player : players) {
+                                                if (isPlayer) {
+                                                    if (senderPlayer.getUniqueId() == player.getUniqueId()) {
+                                                        Lang.send(sender, "extension.mute-and-ban.command.mute.notself");
+                                                        continue;
+                                                    }
+                                                }
+                                                if (MuteNBanManager.isNowMuted(player).getFirst()) {
+                                                    Lang.send(sender, "extension.mute-and-ban.command.mute.failed", player.getName());
+                                                } else {
+                                                    MuteNBanManager.addMuted(sender.getName(), player, null, reason);
+                                                    if (player.isOnline()) {
+                                                        FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowMuted(player);
+                                                        Date date = obj.getThird();
+                                                        if (date != null) {
+                                                            Time time = ChatManager.getManager().createTime((date.getTime() - new Date().getTime()) / 1000L);
+                                                            Lang.send(((Player) player), "extension.mute-and-ban.message.muted.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond());
+                                                        } else {
+                                                            Lang.send(((Player) player), "extension.mute-and-ban.message.muted.forever", obj.getFourth(), obj.getSecond());
+                                                        }
+                                                    }
+                                                    Lang.send(sender, "extension.mute-and-ban.command.mute.success", player.getName());
+                                                }
+                                            }
+                                            return 1;
+                                        }))
+                                .executes((sender, helper) -> {
+                                    if (!ExtensionUtils.enabledMuteAndBanExtension()) {
+                                        Lang.send(sender, "command.extensionrequired");
+                                        return 1;
+                                    }
+                                    List<OfflinePlayer> players = helper.getAsOfflinePlayer("target");
+                                    boolean isPlayer = sender instanceof Player;
+                                    Player senderPlayer = isPlayer ? (Player) sender : null;
+                                    for (OfflinePlayer player : players) {
+                                        if (isPlayer) {
+                                            if (senderPlayer.getUniqueId() == player.getUniqueId()) {
+                                                Lang.send(sender, "extension.mute-and-ban.command.mute.notself");
+                                                continue;
+                                            }
+                                        }
+                                        if (MuteNBanManager.isNowMuted(player).getFirst()) {
+                                            Lang.send(sender, "extension.mute-and-ban.command.mute.failed", player.getName());
+                                        } else {
+                                            MuteNBanManager.addMuted(sender.getName(), player, null, Lang.lang(sender, "extension.mute-and-ban.default.no-reason"));
+                                            if (player.isOnline()) {
+                                                FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowMuted(player);
+                                                Date date = obj.getThird();
+                                                if (date != null) {
+                                                    Time time = ChatManager.getManager().createTime((date.getTime() - new Date().getTime()) / 1000L);
+                                                    Lang.send(((Player) player), "extension.mute-and-ban.message.muted.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond());
+                                                } else {
+                                                    Lang.send(((Player) player), "extension.mute-and-ban.message.muted.forever", obj.getFourth(), obj.getSecond());
+                                                }
+                                            }
+                                            Lang.send(sender, "extension.mute-and-ban.command.mute.success", player.getName());
+                                        }
+                                    }
+                                    return 1;
+                                }))
+                        .executes((sender, helper) -> {
+                            if (!ExtensionUtils.enabledMuteAndBanExtension()) {
+                                Lang.send(sender, "command.extensionrequired");
+                                return 1;
+                            }
+                            List<OfflinePlayer> players = helper.getAsOfflinePlayer("target");
+                            boolean isPlayer = sender instanceof Player;
+                            Player senderPlayer = isPlayer ? (Player) sender : null;
+                            for (OfflinePlayer player : players) {
+                                if (isPlayer) {
+                                    if (senderPlayer.getUniqueId() == player.getUniqueId()) {
+                                        Lang.send(sender, "extension.mute-and-ban.command.mute.notself");
+                                        continue;
+                                    }
+                                }
+                                if (MuteNBanManager.isNowBanned(player).getFirst()) {
+                                    Lang.send(sender, "extension.mute-and-ban.command.mute.failed", player.getName());
+                                } else {
+                                    MuteNBanManager.addBanned(sender.getName(), player, null, Lang.lang(sender, "extension.mute-and-ban.default.no-reason"));
+                                    if (player.isOnline()) {
+                                        FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowMuted(player);
+                                        Date date = obj.getThird();
+                                        if (date != null) {
+                                            Time time = ChatManager.getManager().createTime((date.getTime() - new Date().getTime()) / 1000L);
+                                            Lang.send(((Player) player), "extension.mute-and-ban.message.muted.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond());
+                                        } else {
+                                            Lang.send(((Player) player), "extension.mute-and-ban.message.muted.forever", obj.getFourth(), obj.getSecond());
+                                        }
+                                    }
+                                    Lang.send(sender, "extension.mute-and-ban.command.mute.success", player.getName());
+                                }
+                            }
+                            return 1;
+                        })
+                )
+        );
+        EzCommandManager.register("dynamichat", new EzCommand("unmute", "dynamichat.mnb.unmute", PermissionDefault.OP)
+                .then(new EzArgument(ArgumentOfflinePlayer.argumentType(), "target")
+                        .executes((sender, helper) -> {
+                            if (!ExtensionUtils.enabledMuteAndBanExtension()) {
+                                Lang.send(sender, "command.extensionrequired");
+                                return 1;
+                            }
+                            List<OfflinePlayer> players = helper.getAsOfflinePlayer("target");
+                            for (OfflinePlayer player : players) {
+                                FoObj<Boolean, String, Date, String> mutedInformation = MuteNBanManager.isNowMuted(player);
+                                if (!mutedInformation.getFirst()) {
+                                    Lang.send(sender, "extension.mute-and-ban.command.unmute.failed", player.getName());
+                                } else {
+                                    MuteNBanManager.unmuted(player, mutedInformation.getFourth());
+                                    Lang.send(sender, "extension.mute-and-ban.command.unmute.success", player.getName());
+                                    if (player.isOnline()) {
+                                        Lang.send(((Player) player), "extension.mute-and-ban.message.unmuted");
+                                    }
+                                }
+                            }
+                            return 1;
+                        })
+                )
         );
         NMSCommandKiller.kill(this);
     }

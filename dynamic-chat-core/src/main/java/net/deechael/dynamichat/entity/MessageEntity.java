@@ -7,8 +7,8 @@ public class MessageEntity extends MuteMessageEntity implements Message {
 
     private final User user;
 
-    public MessageEntity(User user, String content, String id) {
-        super(user.getName(), content, id);
+    public MessageEntity(User user, String content, String id, String sendTime) {
+        super(user.getName(), content, id, sendTime);
         this.user = user;
     }
 

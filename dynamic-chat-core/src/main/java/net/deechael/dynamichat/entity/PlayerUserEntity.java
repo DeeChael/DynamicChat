@@ -1,18 +1,23 @@
 package net.deechael.dynamichat.entity;
 
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.deechael.dynamichat.api.ChatManager;
 import net.deechael.dynamichat.api.PlayerUser;
+import net.deechael.dynamichat.object.Punishment;
+import net.deechael.dynamichat.object.Time;
 import net.deechael.dynamichat.placeholder.DynamicChatPlaceholder;
-import net.deechael.dynamichat.util.ColorUtils;
-import net.deechael.dynamichat.util.Lang;
-import net.deechael.dynamichat.util.StringUtils;
+import net.deechael.dynamichat.util.*;
 import net.deechael.useless.objs.DuObj;
+import net.deechael.useless.objs.FoObj;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.*;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -38,6 +43,212 @@ public class PlayerUserEntity extends UserEntity implements PlayerUser {
     @Override
     public Player getSender() {
         return player;
+    }
+
+    @Override
+    public void banIP() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+
+    }
+
+    @Override
+    public void unbanIP() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+
+    }
+
+    @Override
+    public void unban() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowBanned(player);
+        if (obj.getFirst())
+            throw new RuntimeException("The player hasn't been banned!");
+        MuteNBanManager.unbanned(player, obj.getFourth());
+    }
+
+    @Override
+    public void unmute() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowMuted(player);
+        if (obj.getFirst())
+            throw new RuntimeException("The player hasn't been muted!");
+        MuteNBanManager.unmuted(player, obj.getFourth());
+    }
+
+    @Override
+    public void ban() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        this.ban((Date) null, Lang.lang(this.player, "extension.mute-and-ban.default.no-reason"));
+    }
+
+    @Override
+    public void ban(Time time) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        this.ban(time, Lang.lang(this.player, "extension.mute-and-ban.default.no-reason"));
+    }
+
+    @Override
+    public void ban(Date unbanDate) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        this.ban(unbanDate, Lang.lang(this.player, "extension.mute-and-ban.default.no-reason"));
+    }
+
+    @Override
+    public void ban(String reason) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        this.ban((Date) null, reason);
+    }
+
+    @Override
+    public void ban(Time time, String reason) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        Date date = null;
+        if (time != null)
+            date = time.after(new Date());
+        this.ban(date, reason);
+    }
+
+    @Override
+    public void ban(Date unbanDate, String reason) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        if (MuteNBanManager.isNowBanned(player).getFirst())
+            throw new RuntimeException("The player has been banned!");
+        Punishment punishment = MuteNBanManager.addMuted("PLUGIN", player, unbanDate, reason);
+
+        if (unbanDate != null) {
+            Time time = ChatManager.getManager().createTime((unbanDate.getTime() - new Date().getTime()) / 1000L);
+            player.kickPlayer(Lang.lang(player, "extension.mute-and-ban.message.banned.temporary", punishment.getId(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMinutes(), time.getSeconds(), punishment.getReason()));
+        } else {
+            player.kickPlayer(Lang.lang(player, "extension.mute-and-ban.message.banned.forever", punishment.getId(), punishment.getReason()));
+        }
+    }
+
+    @Override
+    public void kick() {
+        this.kick(Lang.lang(this.player, "extension.mute-and-ban.default.no-reason"));
+    }
+
+    @Override
+    public void kick(String reason) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        this.player.kickPlayer(Lang.lang(player, "extension.mute-and-ban.message.kicked", reason));
+    }
+
+    @Override
+    public void mute() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        this.mute((Date) null, Lang.lang(this.player, "extension.mute-and-ban.default.no-reason"));
+    }
+
+    @Override
+    public void mute(Time time) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        this.mute(time, Lang.lang(this.player, "extension.mute-and-ban.default.no-reason"));
+    }
+
+    @Override
+    public void mute(Date unmuteDate) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        this.mute(unmuteDate, Lang.lang(this.player, "extension.mute-and-ban.default.no-reason"));
+    }
+
+    @Override
+    public void mute(String reason) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        this.mute((Date) null, reason);
+    }
+
+    @Override
+    public void mute(Time time, String reason) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        Date date = null;
+        if (time != null)
+            date = time.after(new Date());
+        this.mute(date, reason);
+    }
+
+    @Override
+    public void mute(Date unmuteDate, String reason) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        if (MuteNBanManager.isNowMuted(player).getFirst())
+            throw new RuntimeException("The player has been muted!");
+        Punishment punishment = MuteNBanManager.addMuted("PLUGIN", player, unmuteDate, reason);
+
+        if (unmuteDate != null) {
+            Time time = ChatManager.getManager().createTime((unmuteDate.getTime() - new Date().getTime()) / 1000L);
+            player.kickPlayer(Lang.lang(player, "extension.mute-and-ban.message.banned.temporary", punishment.getId(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMinutes(), time.getSeconds(), punishment.getReason()));
+        } else {
+            player.kickPlayer(Lang.lang(player, "extension.mute-and-ban.message.banned.forever", punishment.getId(), punishment.getReason()));
+        }
+    }
+
+    @Override
+    public List<? extends Punishment> getBanHistory() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        return MuteNBanManager.getBannedHistory(player);
+    }
+
+    @Override
+    public List<? extends Punishment> getMuteHistory() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        return MuteNBanManager.getMutedHistory(player);
+    }
+
+    @Override
+    public List<? extends Punishment> getPunishHistory() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        List<Punishment> punishments = new ArrayList<>();
+        punishments.addAll(getBanHistory());
+        punishments.addAll(getMuteHistory());
+        return punishments;
+    }
+
+    @Override
+    public boolean isBanned() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        return MuteNBanManager.isNowBanned(player).getFirst();
+    }
+
+    @Override
+    public boolean isMuted() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        return MuteNBanManager.isNowMuted(player).getFirst();
+    }
+
+    @Override
+    public Punishment getBan(String id) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        return MuteNBanManager.getBanById(player, id);
+    }
+
+    @Override
+    public Punishment getMute(String id) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        return MuteNBanManager.getMuteById(player, id);
     }
 
     void chat0(CommandSender sender, String format, String message, String msgId) {

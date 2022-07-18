@@ -1,5 +1,8 @@
 package net.deechael.dynamichat.api;
 
+import net.deechael.dynamichat.annotation.Included;
+import net.deechael.dynamichat.annotation.NotIncluded;
+import net.deechael.dynamichat.object.Time;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
@@ -45,5 +48,23 @@ public abstract class ChatManager {
     public abstract boolean languageFollowClient();
 
     public abstract String getDefaultLanguage();
+
+    public abstract int getIndex(MuteMessage message);
+
+    public abstract MuteMessage getMessageByIndex(int index);
+
+    public abstract MuteMessage getMessageById(String id);
+
+    public abstract Context getContext(@Included int startIndex, @NotIncluded int endIndex);
+
+    public abstract Context getContext(MuteMessage startMessage, int amount);
+
+    public abstract int recordedMessages();
+
+    public abstract Time createTime(int years, int months, int weeks, int days, int hours, int minutes, int seconds);
+
+    public abstract Time createTime(long seconds);
+
+    public abstract Time parseTime(String timeString);
 
 }

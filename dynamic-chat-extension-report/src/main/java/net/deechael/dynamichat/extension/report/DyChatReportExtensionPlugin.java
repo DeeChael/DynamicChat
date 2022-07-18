@@ -71,6 +71,7 @@ public final class DyChatReportExtensionPlugin extends JavaPlugin {
                     return;
                 }
                 AnvilGUI gui = new AnvilGUI(DyChatReportExtensionPlugin.getInstance());
+                gui.dropOnClose();
                 gui.setItem(AnvilGUI.AnvilSlot.LEFT_INPUT, (Image) (viewer, inventory) -> {
                     ItemStack itemStack = new ItemStack(Material.PAPER);
                     ItemMeta itemMeta = itemStack.getItemMeta();

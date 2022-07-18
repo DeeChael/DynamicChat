@@ -58,169 +58,10 @@ public final class AnvilGUI implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
-    private static Class<?> generateAnvilClass() {
-        JClass anvil = new JClass(Level.PUBLIC, "net.deechael.dynamichat.gui", "NMSAnvil");
-        anvil.importClass(AnvilInterface.class);
-        anvil.importClass(Ref.getNmsOrOld("network.protocol.game.PacketPlayOutOpenWindow", "PacketPlayOutOpenWindow"));
-        anvil.importClass(Ref.getNmsOrOld("world.inventory.Containers", "Containers"));
-        anvil.importClass(Ref.getNmsOrOld("world.inventory.ContainerAnvil", "ContainerAnvil"));
-        anvil.importClass(Ref.getNmsOrOld("world.inventory.ContainerAccess", "ContainerAccess"));
-        anvil.importClass(Ref.getNmsOrOld("world.IInventory", "IInventory"));
-        anvil.importClass(Ref.getNmsOrOld("world.level.World", "World"));
-        anvil.importClass(Ref.getNmsOrOld("world.entity.player.EntityHuman", "EntityHuman"));
-        anvil.importClass(Ref.getNmsOrOld("core.BlockPosition", "BlockPosition"));
-        if (Ref.getVersion() >= 19) {
-            anvil.importClass(Ref.getNmsOrOld("network.chat.IChatBaseComponent", ""));
-        } else {
-            anvil.importClass(Ref.getNmsOrOld("network.chat.ChatMessage", "ChatMessage"));
-        }
-        anvil.importClass(Ref.getObcClass("entity.CraftPlayer"));
-        anvil.importClass(Player.class);
-        anvil.importClass(Inventory.class);
-        anvil.importClass(ItemStack.class);
-
-        anvil.extend(JType.classType(Ref.getNmsOrOld("world.inventory.ContainerAnvil", "ContainerAnvil")));
-
-        anvil.implement(JType.classType(AnvilInterface.class));
-
-        Var int0 = JStringVar.intVar(0);
-
-        JField bukkitPlayer = anvil.addField(Level.PRIVATE, JType.classType(Player.class), "bukkitPlayer", true, false);
-
-        JConstructor constructor = anvil.addConstructor(Level.PUBLIC);
-        Var player = constructor.addParameter(JType.classType(Player.class), "player");
-        if (Ref.getVersion() <= 10) {
-            Var craftPlayer = Var.castObject(player, JType.classType(Ref.getObcClass("entity.CraftPlayer")));
-            Var entityPlayer = Var.invokeMethod(craftPlayer, "getHandle");
-            Var inventory = Var.objectsField(entityPlayer, "inventory");
-            Var world = Var.objectsField(entityPlayer, "world");
-            Var blockPosition = Var.constructor(JType.classType(Ref.getNmsOrOld("core.BlockPosition", "BlockPosition")), int0, int0, int0);
-            constructor.superConstructor(inventory, world, blockPosition, entityPlayer);
-        } else {
-            Var craftPlayer = Var.castObject(player, JType.classType(Ref.getObcClass("entity.CraftPlayer")));
-            Var entityPlayer = Var.invokeMethod(craftPlayer, "getHandle");
-            Var nextContainerCounter = Var.invokeMethod(entityPlayer, "nextContainerCounter");
-            Var inventory;
-            if (Ref.getVersion() >= 19) {
-                inventory = Var.invokeMethod(entityPlayer, "fB");
-            } else if (Ref.getVersion() == 18) {
-                inventory = Var.invokeMethod(entityPlayer, "fr");
-            } else if (Ref.getVersion() == 17) {
-                inventory = Var.invokeMethod(entityPlayer, "fq");
-            } else if (Ref.getVersion() == 16) {
-                inventory = Var.invokeMethod(entityPlayer, "getInventory");
-            } else {
-                inventory = Var.objectsField(entityPlayer, "inventory");
-            }
-            Var blockPosition = Var.constructor(JType.classType(Ref.getNmsOrOld("core.BlockPosition", "BlockPosition")), int0, int0, int0);
-            Var containerAccess;
-            if (Ref.getVersion() >= 17) {
-                containerAccess = Var.invokeMethod(JType.classType(Ref.getNmsOrOld("world.inventory.ContainerAccess", "ContainerAccess")), "a", Var.invokeMethod(Var.castObject(Var.invokeMethod(craftPlayer, "getWorld"), JType.classType(Ref.getObcClass("CraftWorld"))), "getHandle"), blockPosition);
-            } else {
-                containerAccess = Var.invokeMethod(JType.classType(Ref.getNmsOrOld("world.inventory.ContainerAccess", "ContainerAccess")), "at", Var.invokeMethod(Var.castObject(Var.invokeMethod(craftPlayer, "getWorld"), JType.classType(Ref.getObcClass("CraftWorld"))), "getHandle"), blockPosition);
-            }
-            constructor.superConstructor(nextContainerCounter, inventory, containerAccess);
-        }
-
-        constructor.setThisFieldValue(anvil.getField("checkReachable"), JStringVar.booleanVar(false));
-        constructor.setThisFieldValue(bukkitPlayer, player);
-
-        String resetCost_name;
-        if (Ref.getVersion() >= 17) {
-            resetCost_name = "l";
-        } else if (Ref.getVersion() == 16) {
-            resetCost_name = "i";
-        } else if (Ref.getVersion() >= 11 && Ref.getVersion() <= 15) {
-            resetCost_name = "e";
-        } else {
-            resetCost_name = "d";
-        }
-        JMethod costMethod = anvil.addMethod(Level.PUBLIC, resetCost_name, false, false, false);
-        costMethod.invokeSuperMethod(resetCost_name);
-        if (Ref.getVersion() >= 12) {
-            if (Ref.getVersion() >= 17) {
-                costMethod.invokeMethod(anvil.getField("w"), "a", int0);
-            } else if (Ref.getVersion() == 16) {
-                costMethod.invokeMethod(anvil.getField("w"), "set", int0);
-            } else {
-                costMethod.invokeMethod(anvil.getField("levelCost"), "set", int0);
-            }
-        } else if (Ref.getVersion() == 11) {
-            costMethod.invokeMethod(anvil.getField("levelCost"), "a", int0);
-        } else {
-            costMethod.setThisFieldValue(anvil.getField("levelCost"), int0);
-        }
-
-        anvil.addMethod(Level.PUBLIC, "b", false, false, false).addParameter(JType.classType(Ref.getNmsOrOld("world.entity.player.EntityHuman", "EntityHuman")), "entityHuman");
-
-        JMethod aMethod = anvil.addMethod(Level.PROTECTED, "a", false, false, false);
-        aMethod.addParameter(JType.classType(Ref.getNmsOrOld("world.entity.player.EntityHuman", "EntityHuman")), "entityHuman");
-        aMethod.addParameter(JType.classType(Ref.getNmsOrOld("world.IInventory", "IInventory")), "iInventory");
-
-        JMethod getWindowId = anvil.addMethod(JType.INT, Level.PUBLIC, "getWindowId", false, false, false);
-        if (Ref.getVersion() >= 16) {
-            getWindowId.returnValue(anvil.getField("j"));
-        } else {
-            getWindowId.returnValue(anvil.getField("windowId"));
-        }
-
-        JMethod castToBukkit = anvil.addMethod(JType.classType(Inventory.class), Level.PUBLIC, "castToBukkit", false, false, false);
-        castToBukkit.returnValue(Var.invokeMethod(Var.invokeThisMethod("getBukkitView"), "getTopInventory"));
-
-        JMethod openToPlayer = anvil.addMethod(Level.PUBLIC, "open", false, false, false);
-
-        Var titleString = openToPlayer.addParameter(JType.STRING, "title");
-        Var packet;
-        JType packetClass = JType.classType(Ref.getNmsOrOld("network.protocol.game.PacketPlayOutOpenWindow", "PacketPlayOutOpenWindow"));
-        Var title;
-        if (Ref.getVersion() >= 19) {
-            title = Var.invokeMethod(JType.classType(Ref.getNmsOrOld("network.chat.IChatBaseComponent", "")), "b", titleString);
-        } else {
-            title = Var.constructor(JType.classType(Ref.getNmsOrOld("network.chat.ChatMessage", "ChatMessage")), titleString);
-        }
-        if (Ref.getVersion() >= 16) {
-            packet = openToPlayer.createVar(packetClass, "packet", Var.constructor(packetClass, Var.invokeThisMethod("getWindowId"), Var.staticField(Ref.getNmsOrOld("world.inventory.Containers", "Containers"), "h"), title));
-        } else if (Ref.getVersion() <= 10) {
-            packet = openToPlayer.createVar(packetClass, "packet", Var.constructor(packetClass, Var.invokeThisMethod("getWindowId"), JStringVar.stringVar("minecraft:anvil"), title));
-        } else {
-            packet = openToPlayer.createVar(packetClass, "packet", Var.constructor(packetClass, Var.invokeThisMethod("getWindowId"), Var.staticField(Ref.getNmsOrOld("world.inventory.Containers", "Containers"), "ANVIL"), title));
-        }
-
-        String playerConnectionName;
-        if (Ref.getVersion() >= 16) {
-            playerConnectionName = "b";
-        } else {
-            playerConnectionName = "playerConnection";
-        }
-        Var entityPlayer = Var.invokeMethod(Var.castObject(bukkitPlayer, JType.classType(Ref.getObcClass("entity.CraftPlayer"))), "getHandle");
-        Var playerConnection = Var.objectsField(entityPlayer, playerConnectionName);
-        if (Ref.getVersion() >= 17) {
-            openToPlayer.invokeMethod(playerConnection, "a", packet);
-        } else {
-            openToPlayer.invokeMethod(playerConnection, "sendPacket", packet);
-        }
-        if (Ref.getVersion() >= 19) {
-            openToPlayer.setOthersFieldValue(entityPlayer, "bU", Var.thisVar());
-        } else if (Ref.getVersion() == 18) {
-            openToPlayer.setOthersFieldValue(entityPlayer, "bV", Var.thisVar());
-        } else if (Ref.getVersion() == 17) {
-            openToPlayer.setOthersFieldValue(entityPlayer, "bW", Var.thisVar());
-        } else if (Ref.getVersion() == 16) {
-            openToPlayer.setOthersFieldValue(entityPlayer, "bV", Var.thisVar());
-        } else {
-            openToPlayer.setOthersFieldValue(entityPlayer, "activeContainer", Var.thisVar());
-        }
-        if (Ref.getVersion() >= 17) {
-            openToPlayer.invokeMethod(entityPlayer, "a", Var.thisVar());
-            //openToPlayer.invokeThisMethod("a", entityPlayer);
-        } else {
-            openToPlayer.invokeThisMethod("addSlotListener", entityPlayer);
-        }
-        try {
-            return JGenerator.generate(anvil);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Failed to create anvil gui!");
-        }
+    public void dropOnClose() {
+        this.onClose = (player, inventory) -> {
+            this.drop();
+        };
     }
 
     public void setOnClose(DuParameter<Player, Inventory> onClose) {
@@ -422,6 +263,175 @@ public final class AnvilGUI implements Listener {
     ///////             2022 DCG Project - https://www.github.com/DeeChael/DynamicClassGenerator              ///////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+    private static Class<?> generateAnvilClass() {
+        JClass anvil = new JClass(Level.PUBLIC, "net.deechael.dynamichat.gui", "NMSAnvil");
+        anvil.importClass(AnvilInterface.class);
+        anvil.importClass(Ref.getNmsOrOld("network.protocol.game.PacketPlayOutOpenWindow", "PacketPlayOutOpenWindow"));
+        anvil.importClass(Ref.getNmsOrOld("world.inventory.Containers", "Containers"));
+        anvil.importClass(Ref.getNmsOrOld("world.inventory.ContainerAnvil", "ContainerAnvil"));
+        anvil.importClass(Ref.getNmsOrOld("world.inventory.ContainerAccess", "ContainerAccess"));
+        anvil.importClass(Ref.getNmsOrOld("world.IInventory", "IInventory"));
+        anvil.importClass(Ref.getNmsOrOld("world.level.World", "World"));
+        anvil.importClass(Ref.getNmsOrOld("world.entity.player.EntityHuman", "EntityHuman"));
+        anvil.importClass(Ref.getNmsOrOld("core.BlockPosition", "BlockPosition"));
+        if (Ref.getVersion() >= 19) {
+            anvil.importClass(Ref.getNmsOrOld("network.chat.IChatBaseComponent", ""));
+        } else {
+            anvil.importClass(Ref.getNmsOrOld("network.chat.ChatMessage", "ChatMessage"));
+        }
+        anvil.importClass(Ref.getObcClass("entity.CraftPlayer"));
+        anvil.importClass(Player.class);
+        anvil.importClass(Inventory.class);
+        anvil.importClass(ItemStack.class);
+
+        anvil.extend(JType.classType(Ref.getNmsOrOld("world.inventory.ContainerAnvil", "ContainerAnvil")));
+
+        anvil.implement(JType.classType(AnvilInterface.class));
+
+        Var int0 = JStringVar.intVar(0);
+
+        JField bukkitPlayer = anvil.addField(Level.PRIVATE, JType.classType(Player.class), "bukkitPlayer", true, false);
+
+        JConstructor constructor = anvil.addConstructor(Level.PUBLIC);
+        Var player = constructor.addParameter(JType.classType(Player.class), "player");
+        if (Ref.getVersion() <= 10) {
+            Var craftPlayer = Var.castObject(player, JType.classType(Ref.getObcClass("entity.CraftPlayer")));
+            Var entityPlayer = Var.invokeMethod(craftPlayer, "getHandle");
+            Var inventory = Var.objectsField(entityPlayer, "inventory");
+            Var world = Var.objectsField(entityPlayer, "world");
+            Var blockPosition = Var.constructor(JType.classType(Ref.getNmsOrOld("core.BlockPosition", "BlockPosition")), int0, int0, int0);
+            constructor.superConstructor(inventory, world, blockPosition, entityPlayer);
+        } else {
+            Var craftPlayer = Var.castObject(player, JType.classType(Ref.getObcClass("entity.CraftPlayer")));
+            Var entityPlayer = Var.invokeMethod(craftPlayer, "getHandle");
+            Var nextContainerCounter = Var.invokeMethod(entityPlayer, "nextContainerCounter");
+            Var inventory;
+            if (Ref.getVersion() >= 19) {
+                inventory = Var.invokeMethod(entityPlayer, "fB");
+            } else if (Ref.getVersion() == 18) {
+                inventory = Var.invokeMethod(entityPlayer, "fr");
+            } else if (Ref.getVersion() == 17) {
+                inventory = Var.invokeMethod(entityPlayer, "fq");
+            } else if (Ref.getVersion() == 16) {
+                inventory = Var.invokeMethod(entityPlayer, "getInventory");
+            } else {
+                inventory = Var.objectsField(entityPlayer, "inventory");
+            }
+            Var blockPosition = Var.constructor(JType.classType(Ref.getNmsOrOld("core.BlockPosition", "BlockPosition")), int0, int0, int0);
+            Var containerAccess;
+            if (Ref.getVersion() >= 17) {
+                containerAccess = Var.invokeMethod(JType.classType(Ref.getNmsOrOld("world.inventory.ContainerAccess", "ContainerAccess")), "a", Var.invokeMethod(Var.castObject(Var.invokeMethod(craftPlayer, "getWorld"), JType.classType(Ref.getObcClass("CraftWorld"))), "getHandle"), blockPosition);
+            } else {
+                containerAccess = Var.invokeMethod(JType.classType(Ref.getNmsOrOld("world.inventory.ContainerAccess", "ContainerAccess")), "at", Var.invokeMethod(Var.castObject(Var.invokeMethod(craftPlayer, "getWorld"), JType.classType(Ref.getObcClass("CraftWorld"))), "getHandle"), blockPosition);
+            }
+            constructor.superConstructor(nextContainerCounter, inventory, containerAccess);
+        }
+
+        constructor.setThisFieldValue(anvil.getField("checkReachable"), JStringVar.booleanVar(false));
+        constructor.setThisFieldValue(bukkitPlayer, player);
+
+        String resetCost_name;
+        if (Ref.getVersion() >= 17) {
+            resetCost_name = "l";
+        } else if (Ref.getVersion() == 16) {
+            resetCost_name = "i";
+        } else if (Ref.getVersion() >= 11 && Ref.getVersion() <= 15) {
+            resetCost_name = "e";
+        } else {
+            resetCost_name = "d";
+        }
+        JMethod costMethod = anvil.addMethod(Level.PUBLIC, resetCost_name, false, false, false);
+        costMethod.invokeSuperMethod(resetCost_name);
+        if (Ref.getVersion() >= 12) {
+            if (Ref.getVersion() >= 17) {
+                costMethod.invokeMethod(anvil.getField("w"), "a", int0);
+            } else if (Ref.getVersion() == 16) {
+                costMethod.invokeMethod(anvil.getField("w"), "set", int0);
+            } else {
+                costMethod.invokeMethod(anvil.getField("levelCost"), "set", int0);
+            }
+        } else if (Ref.getVersion() == 11) {
+            costMethod.invokeMethod(anvil.getField("levelCost"), "a", int0);
+        } else {
+            costMethod.setThisFieldValue(anvil.getField("levelCost"), int0);
+        }
+
+        anvil.addMethod(Level.PUBLIC, "b", false, false, false).addParameter(JType.classType(Ref.getNmsOrOld("world.entity.player.EntityHuman", "EntityHuman")), "entityHuman");
+
+        JMethod aMethod = anvil.addMethod(Level.PROTECTED, "a", false, false, false);
+        aMethod.addParameter(JType.classType(Ref.getNmsOrOld("world.entity.player.EntityHuman", "EntityHuman")), "entityHuman");
+        aMethod.addParameter(JType.classType(Ref.getNmsOrOld("world.IInventory", "IInventory")), "iInventory");
+
+        JMethod getWindowId = anvil.addMethod(JType.INT, Level.PUBLIC, "getWindowId", false, false, false);
+        if (Ref.getVersion() >= 16) {
+            getWindowId.returnValue(anvil.getField("j"));
+        } else {
+            getWindowId.returnValue(anvil.getField("windowId"));
+        }
+
+        JMethod castToBukkit = anvil.addMethod(JType.classType(Inventory.class), Level.PUBLIC, "castToBukkit", false, false, false);
+        castToBukkit.returnValue(Var.invokeMethod(Var.invokeThisMethod("getBukkitView"), "getTopInventory"));
+
+        JMethod openToPlayer = anvil.addMethod(Level.PUBLIC, "open", false, false, false);
+
+        Var titleString = openToPlayer.addParameter(JType.STRING, "title");
+        Var packet;
+        JType packetClass = JType.classType(Ref.getNmsOrOld("network.protocol.game.PacketPlayOutOpenWindow", "PacketPlayOutOpenWindow"));
+        Var title;
+        if (Ref.getVersion() >= 19) {
+            title = Var.invokeMethod(JType.classType(Ref.getNmsOrOld("network.chat.IChatBaseComponent", "")), "b", titleString);
+        } else {
+            title = Var.constructor(JType.classType(Ref.getNmsOrOld("network.chat.ChatMessage", "ChatMessage")), titleString);
+        }
+        if (Ref.getVersion() >= 16) {
+            packet = openToPlayer.createVar(packetClass, "packet", Var.constructor(packetClass, Var.invokeThisMethod("getWindowId"), Var.staticField(Ref.getNmsOrOld("world.inventory.Containers", "Containers"), "h"), title));
+        } else if (Ref.getVersion() <= 10) {
+            packet = openToPlayer.createVar(packetClass, "packet", Var.constructor(packetClass, Var.invokeThisMethod("getWindowId"), JStringVar.stringVar("minecraft:anvil"), title));
+        } else {
+            packet = openToPlayer.createVar(packetClass, "packet", Var.constructor(packetClass, Var.invokeThisMethod("getWindowId"), Var.staticField(Ref.getNmsOrOld("world.inventory.Containers", "Containers"), "ANVIL"), title));
+        }
+
+        String playerConnectionName;
+        if (Ref.getVersion() >= 16) {
+            playerConnectionName = "b";
+        } else {
+            playerConnectionName = "playerConnection";
+        }
+        Var entityPlayer = Var.invokeMethod(Var.castObject(bukkitPlayer, JType.classType(Ref.getObcClass("entity.CraftPlayer"))), "getHandle");
+        Var playerConnection = Var.objectsField(entityPlayer, playerConnectionName);
+        if (Ref.getVersion() >= 17) {
+            openToPlayer.invokeMethod(playerConnection, "a", packet);
+        } else {
+            openToPlayer.invokeMethod(playerConnection, "sendPacket", packet);
+        }
+        if (Ref.getVersion() >= 19) {
+            openToPlayer.setOthersFieldValue(entityPlayer, "bU", Var.thisVar());
+        } else if (Ref.getVersion() == 18) {
+            openToPlayer.setOthersFieldValue(entityPlayer, "bV", Var.thisVar());
+        } else if (Ref.getVersion() == 17) {
+            openToPlayer.setOthersFieldValue(entityPlayer, "bW", Var.thisVar());
+        } else if (Ref.getVersion() == 16) {
+            openToPlayer.setOthersFieldValue(entityPlayer, "bV", Var.thisVar());
+        } else {
+            openToPlayer.setOthersFieldValue(entityPlayer, "activeContainer", Var.thisVar());
+        }
+        if (Ref.getVersion() >= 17) {
+            openToPlayer.invokeMethod(entityPlayer, "a", Var.thisVar());
+            //openToPlayer.invokeThisMethod("a", entityPlayer);
+        } else {
+            openToPlayer.invokeThisMethod("addSlotListener", entityPlayer);
+        }
+        try {
+            return JGenerator.generate(anvil);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Failed to create anvil gui!");
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    /////////                           Enums                             /////////
+    ///////////////////////////////////////////////////////////////////////////////
 
     public enum AnvilSlot {
         LEFT_INPUT(0), RIGHT_INPUT(1), OUTPUT(2);

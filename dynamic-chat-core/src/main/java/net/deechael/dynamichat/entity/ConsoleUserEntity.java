@@ -1,16 +1,17 @@
 package net.deechael.dynamichat.entity;
 
+import net.deechael.dynamichat.object.Punishment;
+import net.deechael.dynamichat.object.Time;
 import net.deechael.dynamichat.placeholder.DynamicChatPlaceholder;
-import net.deechael.dynamichat.util.ColorUtils;
-import net.deechael.dynamichat.util.ConfigUtils;
-import net.deechael.dynamichat.util.Lang;
-import net.deechael.dynamichat.util.StringUtils;
+import net.deechael.dynamichat.util.*;
 import net.deechael.useless.objs.DuObj;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.*;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.command.CommandSender;
 
+import java.util.Date;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class ConsoleUserEntity extends UserEntity {
@@ -27,6 +28,181 @@ public class ConsoleUserEntity extends UserEntity {
     @Override
     public String getDisplayName() {
         return "Console";
+    }
+
+    @Override
+    public void banIP() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public void unbanIP() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public void unban() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public void unmute() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public void ban() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public void ban(Time time) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public void ban(Date unbanDate) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public void ban(String reason) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public void ban(Time time, String reason) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public void ban(Date unbanDate, String reason) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public void kick() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public void kick(String reason) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public void mute() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public void mute(Time time) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public void mute(Date unmuteDate) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public void mute(String reason) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public void mute(Time time, String reason) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public void mute(Date unmuteDate, String reason) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public List<? extends Punishment> getBanHistory() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public List<? extends Punishment> getMuteHistory() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public List<? extends Punishment> getPunishHistory() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public boolean isBanned() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public boolean isMuted() {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public Punishment getBan(String id) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
+    }
+
+    @Override
+    public Punishment getMute(String id) {
+        if (!ExtensionUtils.enabledMuteAndBanExtension())
+            throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
+        throw new RuntimeException("You can do this to a console sender");
     }
 
     void chat0(CommandSender sender, String format, String message, String msgId) {

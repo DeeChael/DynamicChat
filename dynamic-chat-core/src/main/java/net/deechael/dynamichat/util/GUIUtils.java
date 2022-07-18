@@ -22,7 +22,7 @@ public final class GUIUtils {
         gui.fill((Image) (viewer, inventory) -> {
             ItemStack itemStack = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
             ItemMeta itemMeta = itemStack.getItemMeta();
-            itemMeta.setDisplayName("");
+            itemMeta.setDisplayName(" ");
             itemStack.setItemMeta(itemMeta);
             return itemStack;
         });

@@ -95,6 +95,7 @@ public final class CommandReport extends Command {
                             return true;
                         }
                         AnvilGUI gui = new AnvilGUI(DyChatReportExtensionPlugin.getInstance());
+                        gui.dropOnClose();
                         gui.setItem(AnvilGUI.AnvilSlot.LEFT_INPUT, (Image) (viewer, inventory) -> {
                             ItemStack itemStack = new ItemStack(Material.PAPER);
                             ItemMeta itemMeta = itemStack.getItemMeta();
@@ -116,6 +117,7 @@ public final class CommandReport extends Command {
                                 ReportManager.report(viewer, suspect, reason);
                                 Lang.send(viewer, "command.report.success", suspect.getName());
                                 viewer.closeInventory();
+                                gui.drop();
                             }
 
                             @Override

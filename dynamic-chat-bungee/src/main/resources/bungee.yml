@@ -1,0 +1,4 @@
+name: DynamicChat
+main: net.deechael.dynamichat.bungee.DyChatBungee
+author: DeeChael
+version: 1.00.0

@@ -1,9 +1,6 @@
 package net.deechael.dynamichat.extension.report;
 
-import net.deechael.dynamichat.api.ChatManager;
-import net.deechael.dynamichat.api.Message;
-import net.deechael.dynamichat.api.MessageButton;
-import net.deechael.dynamichat.api.PlayerUser;
+import net.deechael.dynamichat.api.*;
 import net.deechael.dynamichat.extension.report.commands.CommandReport;
 import net.deechael.dynamichat.gui.AnvilGUI;
 import net.deechael.dynamichat.gui.AnvilOutputButton;
@@ -46,16 +43,16 @@ public final class DyChatReportExtensionPlugin extends JavaPlugin {
         Config.checkConfig();
         Lang.checkLanguage();
         getCommandMap().register("dynamic-chat", new CommandReport());
-        ChatManager.getManager().registerButton(2, new MessageButton() {
+        BukkitChatManager.getManager().registerButton(2, new MessageButton() {
             @Override
-            public String display(CommandSender clicker, Message message) {
-                Player player = (Player) clicker;
+            public String display(User clicker, Message message) {
+                Player player = (Player) ((BukkitUser) clicker).getSender();
                 return Lang.lang(player, "button.display");
             }
 
             @Override
-            public void click(CommandSender clicker, Message message) {
-                Player player = (Player) clicker;
+            public void click(User clicker, Message message) {
+                Player player = (Player) ((BukkitUser) clicker).getSender();
                 if (!player.hasPermission("dynamichat.report.admin")) {
                     if (DateUtils.delay(ReportManager.getLastReport(player.getUniqueId()), new Date()) < (Config.delay() * 60 * 1000)) {
                         Lang.send(player, "command.report.toofast");
@@ -84,7 +81,7 @@ public final class DyChatReportExtensionPlugin extends JavaPlugin {
                 gui.setOutput(new AnvilOutputButton() {
                     @Override
                     public void click(Player viewer, Inventory inventory, String outputItem, ClickType type, InventoryAction action) {
-                        if (message.getSender() instanceof PlayerUser playerUser) {
+                        if (message.getSender() instanceof PlayerBukkitUser playerUser) {
                             Player beReported = playerUser.getSender();
                             String reason = "No reason";
                             if (!outputItem.isEmpty() && !outputItem.isBlank() && !outputItem.equalsIgnoreCase(Lang.lang(viewer, "gui.reason.tips"))) {
@@ -115,8 +112,8 @@ public final class DyChatReportExtensionPlugin extends JavaPlugin {
             }
 
             @Override
-            public String hover(CommandSender clicker, Message message) {
-                Player player = (Player) clicker;
+            public String hover(User clicker, Message message) {
+                Player player = (Player) ((BukkitUser) clicker).getSender();
                 return Lang.lang(player, "button.hover");
             }
         });

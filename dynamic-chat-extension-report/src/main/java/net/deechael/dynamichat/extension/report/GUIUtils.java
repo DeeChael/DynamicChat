@@ -1,7 +1,7 @@
 package net.deechael.dynamichat.extension.report;
 
 import net.deechael.dynamichat.api.MuteMessage;
-import net.deechael.dynamichat.entity.DynamicChatManager;
+import net.deechael.dynamichat.entity.DynamicBukkitChatManager;
 import net.deechael.dynamichat.gui.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -838,16 +838,16 @@ public final class GUIUtils {
             if (itemMeta != null) {
                 itemMeta.setDisplayName(Lang.lang(viewer, "gui.reports.report.item.message.display"));
                 List<String> lore = new ArrayList<>();
-                int index = DynamicChatManager.getMessageIndex(((MessageReport) report).getId());
-                if (index > DynamicChatManager.messages() || index < 0) {
+                int index = DynamicBukkitChatManager.getMessageIndex(((MessageReport) report).getId());
+                if (index > DynamicBukkitChatManager.messages() || index < 0) {
                     lore.add("§f" + report.getSuspectName() + ": " + ColorUtils.processChatColor(ColorUtils.processGradientColor(((MessageReport) report).getMessage())));
                 } else {
                     for (int i = Math.max(0, index - 20); i < index; i++) {
-                        MuteMessage message = DynamicChatManager.getMessage(i);
+                        MuteMessage message = DynamicBukkitChatManager.getMessage(i);
                         lore.add("§f" + message.getSenderName() + ": " + ColorUtils.processChatColor(ColorUtils.processGradientColor((message.getContent()))));
                     }
-                    for (int i = index; i < Math.min(index + 20, DynamicChatManager.messages()); i++) {
-                        MuteMessage message = DynamicChatManager.getMessage(i);
+                    for (int i = index; i < Math.min(index + 20, DynamicBukkitChatManager.messages()); i++) {
+                        MuteMessage message = DynamicBukkitChatManager.getMessage(i);
                         lore.add("§f" + message.getSenderName() + ": " + ColorUtils.processChatColor(ColorUtils.processGradientColor((message.getContent()))));
                     }
                 }
@@ -892,18 +892,18 @@ public final class GUIUtils {
             if (itemMeta != null) {
                 itemMeta.setDisplayName(Lang.lang(viewer, "gui.reports.report.item.message.display"));
                 List<String> lore = new ArrayList<>();
-                int index = DynamicChatManager.getMessageIndex(((MessageReport) report).getId());
-                if (index > DynamicChatManager.messages() || index < 0) {
+                int index = DynamicBukkitChatManager.getMessageIndex(((MessageReport) report).getId());
+                if (index > DynamicBukkitChatManager.messages() || index < 0) {
                     lore.add("§f" + report.getSuspectName() + ": " + ColorUtils.processChatColor(ColorUtils.processGradientColor(((MessageReport) report).getMessage())));
                 } else {
                     for (int i = Math.max(0, index - 20); i < index; i++) {
                         System.out.println("A " + i);
-                        MuteMessage message = DynamicChatManager.getMessage(i);
+                        MuteMessage message = DynamicBukkitChatManager.getMessage(i);
                         lore.add("§f" + message.getSenderName() + ": " + ColorUtils.processChatColor(ColorUtils.processGradientColor((message.getContent()))));
                     }
-                    for (int i = index; i < Math.min(index + 20, DynamicChatManager.messages()); i++) {
+                    for (int i = index; i < Math.min(index + 20, DynamicBukkitChatManager.messages()); i++) {
                         System.out.println("B " + i);
-                        MuteMessage message = DynamicChatManager.getMessage(i);
+                        MuteMessage message = DynamicBukkitChatManager.getMessage(i);
                         lore.add("§f" + message.getSenderName() + ": " + ColorUtils.processChatColor(ColorUtils.processGradientColor((message.getContent()))));
                     }
                 }

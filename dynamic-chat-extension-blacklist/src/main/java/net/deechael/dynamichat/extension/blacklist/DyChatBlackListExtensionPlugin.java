@@ -1,8 +1,6 @@
 package net.deechael.dynamichat.extension.blacklist;
 
-import net.deechael.dynamichat.api.ChatManager;
-import net.deechael.dynamichat.api.Message;
-import net.deechael.dynamichat.api.MessageButton;
+import net.deechael.dynamichat.api.*;
 import net.deechael.dynamichat.extension.blacklist.commands.CommandBlackList;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
@@ -34,16 +32,16 @@ public final class DyChatBlackListExtensionPlugin extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new DynamicEventListener(), this);
         Bukkit.getPluginManager().addPermission(new Permission("dynamichat.blacklist.ignore", PermissionDefault.OP));
         getCommandMap().register("dynamic-chat", new CommandBlackList());
-        ChatManager.getManager().registerButton(1, new MessageButton() {
+        BukkitChatManager.getManager().registerButton(1, new MessageButton() {
             @Override
-            public String display(CommandSender clicker, Message message) {
-                Player player = (Player) clicker;
+            public String display(User clicker, Message message) {
+                Player player = (Player) ((BukkitUser) clicker).getSender();
                 return Lang.lang(player, "button.display");
             }
 
             @Override
-            public void click(CommandSender clicker, Message message) {
-                Player player = (Player) clicker;
+            public void click(User clicker, Message message) {
+                Player player = (Player) ((BukkitUser) clicker).getSender();
                 if (player.getName().equalsIgnoreCase(message.getSender().getName())) {
                     Lang.send(player, "command.blacklist.notself");
                     return;
@@ -53,8 +51,8 @@ public final class DyChatBlackListExtensionPlugin extends JavaPlugin {
             }
 
             @Override
-            public String hover(CommandSender clicker, Message message) {
-                Player player = (Player) clicker;
+            public String hover(User clicker, Message message) {
+                Player player = (Player) ((BukkitUser) clicker).getSender();
                 return Lang.lang(player, "button.hover");
             }
         });

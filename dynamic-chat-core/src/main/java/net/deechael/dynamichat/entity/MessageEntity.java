@@ -1,20 +1,20 @@
 package net.deechael.dynamichat.entity;
 
+import net.deechael.dynamichat.api.BukkitUser;
 import net.deechael.dynamichat.api.Message;
-import net.deechael.dynamichat.api.User;
 
 public class MessageEntity extends MuteMessageEntity implements Message {
 
-    private final User user;
+    private final BukkitUser bukkitUser;
 
-    public MessageEntity(User user, String content, String id, String sendTime) {
-        super(user.getName(), content, id, sendTime);
-        this.user = user;
+    public MessageEntity(BukkitUser bukkitUser, String content, String id, String sendTime) {
+        super(bukkitUser.getName(), content, id, sendTime);
+        this.bukkitUser = bukkitUser;
     }
 
     @Override
-    public User getSender() {
-        return user;
+    public BukkitUser getSender() {
+        return bukkitUser;
     }
 
 }

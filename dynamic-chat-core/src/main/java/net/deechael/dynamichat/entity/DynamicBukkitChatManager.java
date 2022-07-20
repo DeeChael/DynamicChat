@@ -21,9 +21,9 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class DynamicChatManager extends ChatManager {
+public class DynamicBukkitChatManager extends BukkitChatManager {
 
-    private final Map<CommandSender, UserEntity> userMap = new HashMap<>();
+    private final Map<CommandSender, BukkitUserEntity> userMap = new HashMap<>();
     private final List<ChannelEntity> channels = new ArrayList<>();
     private final List<TemporaryChannelEntity> temps = new ArrayList<>();
     private final ChannelEntity global = new GlobalChannelEntity();
@@ -38,19 +38,19 @@ public class DynamicChatManager extends ChatManager {
 
     private Sqlite sqlite;
 
-    public DynamicChatManager() {
+    public DynamicBukkitChatManager() {
         global.setDisplayName(ConfigUtils.globalChannelDisplayName());
     }
 
     public static boolean quit(Player player) {
-        return ((DynamicChatManager) ChatManager.getManager()).userMap.remove(player) != null;
+        return ((DynamicBukkitChatManager) BukkitChatManager.getManager()).userMap.remove(player) != null;
     }
 
-    public static DynamicChatManager getChatManager() {
-        return (DynamicChatManager) ChatManager.getManager();
+    public static DynamicBukkitChatManager getChatManager() {
+        return (DynamicBukkitChatManager) BukkitChatManager.getManager();
     }
 
-    public static String newChatCache(User user, String message) {
+    public static String newChatCache(BukkitUser bukkitUser, String message) {
         String key = StringUtils.random64();
         while (getChatManager().chatCaches.containsKey(key)) {
             key = StringUtils.random64();
@@ -58,7 +58,7 @@ public class DynamicChatManager extends ChatManager {
         while (getChatManager().recordKeys.contains(key)) {
             key = StringUtils.random64();
         }
-        Message messageEntity = new MessageEntity(user, message, key, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        Message messageEntity = new MessageEntity(bukkitUser, message, key, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         getChatManager().recordKeys.add(key);
         getChatManager().records.add(new AbstractMap.SimpleEntry<>(key, messageEntity));
         getChatManager().chatCaches.put(key, messageEntity);
@@ -100,14 +100,14 @@ public class DynamicChatManager extends ChatManager {
         }
 
         for (Player player : Bukkit.getOnlinePlayers()) {
-            UserEntity user = ((UserEntity) ChatManager.getManager().getPlayerUser(player));
-            user.setCurrent(DynamicChatManager.getChatManager().global);
+            BukkitUserEntity user = ((BukkitUserEntity) BukkitChatManager.getManager().getBukkitPlayerUser(player));
+            user.setCurrent(DynamicBukkitChatManager.getChatManager().global);
             for (Channel channel : getChatManager().channels) {
                 user.unavailable(channel);
             }
         }
-        UserEntity user = ((UserEntity) ChatManager.getManager().getUser(Bukkit.getConsoleSender()));
-        user.setCurrent(DynamicChatManager.getChatManager().global);
+        BukkitUserEntity user = ((BukkitUserEntity) BukkitChatManager.getManager().getBukkitUser(Bukkit.getConsoleSender()));
+        user.setCurrent(DynamicBukkitChatManager.getChatManager().global);
         for (Channel channel : getChatManager().channels) {
             user.unavailable(channel);
         }
@@ -121,8 +121,8 @@ public class DynamicChatManager extends ChatManager {
             }
             if (entity.isAvailable()) {
                 for (Player player : Bukkit.getOnlinePlayers()) {
-                    UserEntity playerUser = ((UserEntity) ChatManager.getManager().getPlayerUser(player));
-                    playerUser.setCurrent(DynamicChatManager.getChatManager().global);
+                    BukkitUserEntity playerUser = ((BukkitUserEntity) BukkitChatManager.getManager().getBukkitPlayerUser(player));
+                    playerUser.setCurrent(DynamicBukkitChatManager.getChatManager().global);
                     playerUser.available(entity);
                     entity.getUsersRaw().add(playerUser);
                 }
@@ -162,12 +162,12 @@ public class DynamicChatManager extends ChatManager {
     }
 
     @Override
-    public UserEntity getUser(CommandSender sender) {
+    public BukkitUserEntity getBukkitUser(CommandSender sender) {
         if (sender instanceof Player) {
-            return getPlayerUser((Player) sender);
+            return getBukkitPlayerUser((Player) sender);
         }
         if (!userMap.containsKey(sender)) {
-            ConsoleUserEntity userEntity = new ConsoleUserEntity(sender);
+            ConsoleBukkitUserEntity userEntity = new ConsoleBukkitUserEntity(sender);
             for (ChannelEntity entity : this.channels) {
                 if (entity.isAvailable()) {
                     entity.getUsersRaw().add(userEntity);
@@ -180,9 +180,9 @@ public class DynamicChatManager extends ChatManager {
     }
 
     @Override
-    public PlayerUserEntity getPlayerUser(Player player) {
+    public PlayerBukkitUserEntity getBukkitPlayerUser(Player player) {
         if (!userMap.containsKey(player)) {
-            PlayerUserEntity userEntity = new PlayerUserEntity(player);
+            PlayerBukkitUserEntity userEntity = new PlayerBukkitUserEntity(player);
             for (ChannelEntity entity : this.channels) {
                 if (entity.isAvailable()) {
                     entity.getUsersRaw().add(userEntity);
@@ -191,7 +191,7 @@ public class DynamicChatManager extends ChatManager {
             }
             userMap.put(player, userEntity);
         }
-        return (PlayerUserEntity) userMap.get(player);
+        return (PlayerBukkitUserEntity) userMap.get(player);
     }
 
     @Override
@@ -321,6 +321,11 @@ public class DynamicChatManager extends ChatManager {
     @Override
     public Time parseTime(String timeString) {
         return TimeEntity.of(timeString);
+    }
+
+    @Override
+    public BanIPManager getBanIPManager() {
+        return DynamicBanIPManager.INSTANCE;
     }
 
 }

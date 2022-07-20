@@ -50,7 +50,7 @@ public class ContextEntity implements Context {
 
         @Override
         public int getCurrentMessageIndex() {
-            return DynamicChatManager.getMessageIndex(this.iterator.get(index).getId());
+            return DynamicBukkitChatManager.getMessageIndex(this.iterator.get(index).getId());
         }
 
         @Override

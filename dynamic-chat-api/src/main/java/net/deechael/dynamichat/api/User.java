@@ -4,7 +4,6 @@ import net.deechael.dynamichat.object.Punishment;
 import net.deechael.dynamichat.object.Time;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
-import org.bukkit.command.CommandSender;
 
 import java.util.Date;
 import java.util.List;
@@ -17,7 +16,7 @@ public interface User {
 
     void sendMessage(ComponentBuilder builder);
 
-    void whisper(User another, String message);
+    void whisper(BukkitUser another, String message);
 
     void say(String message);
 
@@ -31,7 +30,6 @@ public interface User {
 
     List<? extends Channel> getAvailable();
 
-    CommandSender getSender();
 
     void moveTo(Channel channel);
 

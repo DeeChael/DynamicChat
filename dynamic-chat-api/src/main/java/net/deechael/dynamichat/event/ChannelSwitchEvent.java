@@ -1,7 +1,7 @@
 package net.deechael.dynamichat.event;
 
+import net.deechael.dynamichat.api.BukkitUser;
 import net.deechael.dynamichat.api.Channel;
-import net.deechael.dynamichat.api.User;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
@@ -10,12 +10,12 @@ public final class ChannelSwitchEvent extends Event {
 
     private final static HandlerList handlerList = new HandlerList();
 
-    private final User user;
+    private final BukkitUser bukkitUser;
     private final Channel from;
     private final Channel to;
 
-    public ChannelSwitchEvent(User user, Channel from, Channel to) {
-        this.user = user;
+    public ChannelSwitchEvent(BukkitUser bukkitUser, Channel from, Channel to) {
+        this.bukkitUser = bukkitUser;
         this.from = from;
         this.to = to;
     }
@@ -24,8 +24,8 @@ public final class ChannelSwitchEvent extends Event {
         return handlerList;
     }
 
-    public User getUser() {
-        return user;
+    public BukkitUser getUser() {
+        return bukkitUser;
     }
 
     public Channel getFrom() {

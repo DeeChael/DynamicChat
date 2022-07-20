@@ -33,7 +33,7 @@ public final class ConfigUtils {
             }
         }
         configuration = YamlConfiguration.loadConfiguration(configFile);
-        setDefault(configuration, "bungee-proxy", false);
+        setDefault(configuration, "proxy-mode", false);
         setDefault(configuration, "mention-player", false);
         setDefault(configuration, "whisper-sound", false);
         setDefault(configuration, "channel.enable", false);
@@ -99,6 +99,12 @@ public final class ConfigUtils {
         setDefault(languageConfiguration, "extension.mute-and-ban.command.ban.failed", "&c&l(!) &r&cPlayer &r&f{0}&r&c has been banned already!");
         setDefault(languageConfiguration, "extension.mute-and-ban.command.unban.success", "&a&l(!) &r&aYou unbanned &r&b{0}&r&a successfully!");
         setDefault(languageConfiguration, "extension.mute-and-ban.command.unban.failed", "&c&l(!) &r&cPlayer &r&f{0}&r&c hasn't been banned yet!");
+        setDefault(languageConfiguration, "extension.mute-and-ban.command.ban-ip.success", "&a&l(!) &r&aYou banned &r&b{0}&r&a successfully!");
+        setDefault(languageConfiguration, "extension.mute-and-ban.command.ban-ip.time-format", "&c&l(!) &r&cWrong time format!");
+        setDefault(languageConfiguration, "extension.mute-and-ban.command.ban-ip.notself", "&c&l(!) &r&cYou cannot ban your IP!");
+        setDefault(languageConfiguration, "extension.mute-and-ban.command.ban-ip.failed", "&c&l(!) &r&cIP &r&f{0}&r&c has been banned already!");
+        setDefault(languageConfiguration, "extension.mute-and-ban.command.unban-ip.success", "&a&l(!) &r&aYou unbanned &r&b{0}&r&a successfully!");
+        setDefault(languageConfiguration, "extension.mute-and-ban.command.unban-ip.failed", "&c&l(!) &r&cIP &r&f{0}&r&c hasn't been banned yet!");
         setDefault(languageConfiguration, "extension.mute-and-ban.command.mute.success", "&a&l(!) &r&aYou muted &r&b{0}&r&a successfully!");
         setDefault(languageConfiguration, "extension.mute-and-ban.command.mute.time-format", "&c&l(!) &r&cWrong time format!");
         setDefault(languageConfiguration, "extension.mute-and-ban.command.mute.notself", "&c&l(!) &r&cYou cannot mute yourself!");
@@ -110,7 +116,9 @@ public final class ConfigUtils {
         setDefault(languageConfiguration, "extension.mute-and-ban.message.defaults.reason.mute", "&c&l(!) &r&cYou are muted!");
         setDefault(languageConfiguration, "extension.mute-and-ban.message.kicked", List.of("&c&l(!) &r&cYou are kicked!", "&r&cReason: &r&f{0}"));
         setDefault(languageConfiguration, "extension.mute-and-ban.message.banned.forever", List.of("&c&l(!) &r&cYou are banned &r&fFOREVER&r&c!", "&cBanned ID: &r&f{0}", "&r&cReason: &r&f{1}"));
-        setDefault(languageConfiguration, "extension.mute-and-ban.message.banned.temporary", List.of("&c&l(!) &r&cYou are banned!", "&cBanned ID: &r&f{0}", "&r&cUnbanned after &r&f{1}&r&c years &r&f{2}&r&c months &r&f{3}&r&c weeks &r&f{4}&r&c days &r&f{5}&r&c hours &r&f{6}&r&c minutes &r&f{7}&r&c seconds!", "&r&cReason: &r&f{8}"));
+        setDefault(languageConfiguration, "extension.mute-and-ban.message.banned.temporary", List.of("&c&l(!) &r&cYou are banned!", "&r&cUnbanned after &r&f{1}&r&c years &r&f{2}&r&c months &r&f{3}&r&c weeks &r&f{4}&r&c days &r&f{5}&r&c hours &r&f{6}&r&c minutes &r&f{7}&r&c seconds!", "&r&cReason: &r&f{8}"));
+        setDefault(languageConfiguration, "extension.mute-and-ban.message.banned-ip.forever", List.of("&c&l(!) &r&cYour IP is banned &r&fFOREVER&r&c!", "&r&cReason: &r&f{0}"));
+        setDefault(languageConfiguration, "extension.mute-and-ban.message.banned-ip.temporary", List.of("&c&l(!) &r&cYour IP is banned!", "&r&cUnbanned after &r&f{0}&r&c years &r&f{1}&r&c months &r&f{2}&r&c weeks &r&f{3}&r&c days &r&f{4}&r&c hours &r&f{5}&r&c minutes &r&f{6}&r&c seconds!", "&r&cReason: &r&f{7}"));
         setDefault(languageConfiguration, "extension.mute-and-ban.message.muted.onchat.temporary", List.of("&c&l(!) &r&cYour message didn't be sent because you are muted!", "&r&cUnmuted after &r&f{0}&r&c years &r&f{1}&r&c months &r&f{2}&r&c weeks &r&f{3}&r&c days &r&f{4}&r&c hours &r&f{5}&r&c minutes &r&f{6}&r&c seconds!"));
         setDefault(languageConfiguration, "extension.mute-and-ban.message.muted.onchat.forever", "&c&l(!) &r&cYour message didn't be sent because you are muted &r&fFOREVER&r&c!");
         setDefault(languageConfiguration, "extension.mute-and-ban.message.muted.forever", List.of("&c&l(!) &r&cYou are muted &r&fFOREVER&r&c!", "&cMuted ID: &r&f{0}", "&r&cReason: &r&f{1}"));
@@ -160,6 +168,11 @@ public final class ConfigUtils {
         if (configuration == null) {
             throw new RuntimeException("Configuration hasn't been loaded!");
         }
+    }
+
+    public static boolean isProxyMode() {
+        check();
+        return configuration.getBoolean("proxy-mode");
     }
 
     public static boolean chatColorEnable() {

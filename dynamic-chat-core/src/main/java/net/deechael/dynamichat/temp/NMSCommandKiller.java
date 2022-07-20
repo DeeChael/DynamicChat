@@ -5,8 +5,8 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
-import net.deechael.dynamichat.api.ChatManager;
-import net.deechael.dynamichat.api.User;
+import net.deechael.dynamichat.api.BukkitUser;
+import net.deechael.dynamichat.api.BukkitChatManager;
 import net.deechael.dynamichat.command.argument.ArgumentChat;
 import net.deechael.dynamichat.command.argument.ArgumentEntities;
 import net.deechael.dynamichat.command.argument.ArgumentPlayer;
@@ -54,7 +54,7 @@ public final class NMSCommandKiller {
                 .then(RequiredArgumentBuilder.argument("message", ArgumentChat.instance().argument())
                         .executes(commandContext -> {
                             CommandSender sender = getBukkitSender(commandContext.getSource());
-                            ChatManager.getManager().getUser(sender).say(ArgumentChat.chatToString(ArgumentChat.instance().get(commandContext, "message")));
+                            BukkitChatManager.getManager().getBukkitUser(sender).say(ArgumentChat.chatToString(ArgumentChat.instance().get(commandContext, "message")));
                             return 1;
                         })
                 ).build();
@@ -79,7 +79,7 @@ public final class NMSCommandKiller {
                                                 .argument("message", ArgumentChat.argumentType())
                                                 .executes((commandContext) -> {
                                                     int i = 0;
-                                                    User sender = ChatManager.getManager().getUser(getBukkitSender(commandContext.getSource()));
+                                                    BukkitUser sender = BukkitChatManager.getManager().getBukkitUser(getBukkitSender(commandContext.getSource()));
 
                                                     List<Player> list = new ArrayList<>();
                                                     Collection<Object> collection = (Collection<Object>) ArgumentPlayer.instance().get(commandContext, "targets");
@@ -90,7 +90,7 @@ public final class NMSCommandKiller {
                                                         }
                                                     }
                                                     for (Player player : list) {
-                                                        sender.whisper(ChatManager.getManager().getPlayerUser(player), ArgumentChat.chatToString(ArgumentChat.instance().get(commandContext, "message")));
+                                                        sender.whisper(BukkitChatManager.getManager().getBukkitPlayerUser(player), ArgumentChat.chatToString(ArgumentChat.instance().get(commandContext, "message")));
                                                         i++;
                                                     }
                                                     return i;
@@ -109,8 +109,8 @@ public final class NMSCommandKiller {
         return LiteralArgumentBuilder.literal("console")
                 .then(RequiredArgumentBuilder.argument("message", ArgumentChat.argumentType())
                         .executes(commandContext -> {
-                            User sender = ChatManager.getManager().getUser(getBukkitSender(commandContext.getSource()));
-                            User receiver = ChatManager.getManager().getUser(Bukkit.getConsoleSender());
+                            BukkitUser sender = BukkitChatManager.getManager().getBukkitUser(getBukkitSender(commandContext.getSource()));
+                            BukkitUser receiver = BukkitChatManager.getManager().getBukkitUser(Bukkit.getConsoleSender());
                             sender.whisper(receiver, ArgumentChat.chatToString(ArgumentChat.instance().get(commandContext, "message")));
                             return 1;
                         })

@@ -1,6 +1,6 @@
 package net.deechael.dynamichat.extension.blacklist;
 
-import net.deechael.dynamichat.api.ChatManager;
+import net.deechael.dynamichat.api.BukkitChatManager;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -58,7 +58,7 @@ public class Lang {
     }
 
     public static String lang(Player player, String key, String... params) {
-        if (ChatManager.getManager().languageFollowClient()) {
+        if (BukkitChatManager.getManager().languageFollowClient()) {
             String message = lang(player.getLocale(), key);
             for (int i = 0; i < params.length; i++) {
                 message = message.replace("{" + i + "}", params[i]);
@@ -73,7 +73,7 @@ public class Lang {
     }
 
     public static String lang(String key) {
-        return lang(ChatManager.getManager().getDefaultLanguage(), key);
+        return lang(BukkitChatManager.getManager().getDefaultLanguage(), key);
     }
 
     private static String lang(String name, String key) {

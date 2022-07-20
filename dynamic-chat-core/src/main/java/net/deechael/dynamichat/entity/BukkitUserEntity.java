@@ -1,9 +1,9 @@
 package net.deechael.dynamichat.entity;
 
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.deechael.dynamichat.api.BukkitUser;
 import net.deechael.dynamichat.api.Channel;
-import net.deechael.dynamichat.api.ChatManager;
-import net.deechael.dynamichat.api.User;
+import net.deechael.dynamichat.api.BukkitChatManager;
 import net.deechael.dynamichat.event.CommandSayEvent;
 import net.deechael.dynamichat.event.UserChatEvent;
 import net.deechael.dynamichat.event.WhisperEvent;
@@ -27,15 +27,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public abstract class UserEntity implements User {
+public abstract class BukkitUserEntity implements BukkitUser {
 
     private final List<ChannelEntity> available = new ArrayList<>();
     private final CommandSender sender;
     private ChannelEntity current = null;
 
-    public UserEntity(CommandSender sender) {
+    public BukkitUserEntity(CommandSender sender) {
         this.sender = sender;
-        this.current = (ChannelEntity) ChatManager.getManager().getGlobal();
+        this.current = (ChannelEntity) BukkitChatManager.getManager().getGlobal();
     }
 
     @Override
@@ -54,7 +54,7 @@ public abstract class UserEntity implements User {
     }
 
     @Override
-    public void whisper(User another, String message) {
+    public void whisper(BukkitUser another, String message) {
         if (ConfigUtils.filterEnable()) {
             if (ConfigUtils.filterMode() == Filter.Mode.CANCEL) {
                 if (Filter.suit(message)) {
@@ -102,9 +102,9 @@ public abstract class UserEntity implements User {
     @Override
     public void say(String message) {
         ChatColor chattingColor = null;
-        if (this instanceof PlayerUserEntity) {
+        if (this instanceof PlayerBukkitUserEntity) {
             if (ConfigUtils.chatColorChangeable()) {
-                chattingColor = PlayerUtils.color(((PlayerUserEntity) this).getSender());
+                chattingColor = PlayerUtils.color(((PlayerBukkitUserEntity) this).getSender());
             }
         }
         if (ConfigUtils.filterEnable()) {
@@ -136,7 +136,7 @@ public abstract class UserEntity implements User {
             message = ColorUtils.processGradientColor(message);
         }
         List<Player> showers = new ArrayList<>(Bukkit.getOnlinePlayers());
-        CommandSayEvent event = new CommandSayEvent(this, getCurrent(), ConfigUtils.getSayFormat(), message, new ArrayList<>(showers).stream().map(player -> ChatManager.getManager().getPlayerUser(player)).collect(Collectors.toList()));
+        CommandSayEvent event = new CommandSayEvent(this, getCurrent(), ConfigUtils.getSayFormat(), message, new ArrayList<>(showers).stream().map(player -> BukkitChatManager.getManager().getBukkitPlayerUser(player)).collect(Collectors.toList()));
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             return;
@@ -144,8 +144,8 @@ public abstract class UserEntity implements User {
         String format = event.getFormat();
         message = event.getMessage();
         showers.clear();
-        showers.addAll(event.getRecipients().stream().map(user -> ((PlayerUserEntity) user).getSender()).toList());
-        String msgId = DynamicChatManager.newChatCache(this, message);
+        showers.addAll(event.getRecipients().stream().map(user -> ((PlayerBukkitUserEntity) user).getSender()).toList());
+        String msgId = DynamicBukkitChatManager.newChatCache(this, message);
         if (ConfigUtils.mentionPlayer()) {
             List<Player> hearers = new ArrayList<>();
             boolean everyoneMessageFormatted = false;
@@ -227,7 +227,7 @@ public abstract class UserEntity implements User {
             }
             hearers.forEach(player -> player.playSound(player.getLocation(), Sound.ENTITY_CHICKEN_EGG, 1.0F, 1.0F));
         } else {
-            if (this instanceof PlayerUserEntity) {
+            if (this instanceof PlayerBukkitUserEntity) {
                 if (chattingColor != null) {
                     message = chattingColor.apply(message);
                 }
@@ -241,8 +241,8 @@ public abstract class UserEntity implements User {
     @Override
     public void chat(String message) {
         ChatColor chattingColor = null;
-        if (this instanceof PlayerUserEntity) {
-            chattingColor = PlayerUtils.color(((PlayerUserEntity) this).getSender());
+        if (this instanceof PlayerBukkitUserEntity) {
+            chattingColor = PlayerUtils.color(((PlayerBukkitUserEntity) this).getSender());
         }
         if (ConfigUtils.filterEnable()) {
             if (ConfigUtils.filterMode() == Filter.Mode.CANCEL) {
@@ -274,15 +274,15 @@ public abstract class UserEntity implements User {
         }
         List<Player> showers = new ArrayList<>();
         if (ConfigUtils.channelEnable()) {
-            for (UserEntity user : getCurrent().getUsers()) {
-                if (user instanceof PlayerUserEntity) {
+            for (BukkitUserEntity user : getCurrent().getUsers()) {
+                if (user instanceof PlayerBukkitUserEntity) {
                     showers.add((Player) user.getSender());
                 }
             }
         } else {
             showers.addAll(Bukkit.getOnlinePlayers());
         }
-        UserChatEvent event = new UserChatEvent(this, getCurrent(), getFormat(), message, new ArrayList<>(showers).stream().map(player -> ChatManager.getManager().getPlayerUser(player)).collect(Collectors.toList()));
+        UserChatEvent event = new UserChatEvent(this, getCurrent(), getFormat(), message, new ArrayList<>(showers).stream().map(player -> BukkitChatManager.getManager().getBukkitPlayerUser(player)).collect(Collectors.toList()));
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             return;
@@ -290,8 +290,8 @@ public abstract class UserEntity implements User {
         String format = event.getFormat();
         message = event.getMessage();
         showers.clear();
-        showers.addAll(event.getRecipients().stream().map(user -> ((PlayerUserEntity) user).getSender()).toList());
-        String msgId = DynamicChatManager.newChatCache(this, message);
+        showers.addAll(event.getRecipients().stream().map(user -> ((PlayerBukkitUserEntity) user).getSender()).toList());
+        String msgId = DynamicBukkitChatManager.newChatCache(this, message);
         if (ConfigUtils.mentionPlayer()) {
             List<Player> hearers = new ArrayList<>();
             boolean everyoneMessageFormatted = false;
@@ -373,7 +373,7 @@ public abstract class UserEntity implements User {
             }
             hearers.forEach(player -> player.playSound(player.getLocation(), Sound.ENTITY_CHICKEN_EGG, 1.0F, 1.0F));
         } else {
-            if (this instanceof PlayerUserEntity) {
+            if (this instanceof PlayerBukkitUserEntity) {
                 if (chattingColor != null) {
                     message = chattingColor.apply(message);
                 }
@@ -382,8 +382,8 @@ public abstract class UserEntity implements User {
                 chat0(player, format, message, msgId);
             }
         }
-        if (this instanceof PlayerUserEntity) {
-            message = PlaceholderAPI.setPlaceholders(((PlayerUserEntity) this).getSender(), message);
+        if (this instanceof PlayerBukkitUserEntity) {
+            message = PlaceholderAPI.setPlaceholders(((PlayerBukkitUserEntity) this).getSender(), message);
         }
         Bukkit.getConsoleSender().sendMessage(DynamicChatPlaceholder.replaceSender(sender, "§b[" + getCurrent().getDisplayName() + "§b] §r" + ConfigUtils.getChatFormat().replace("%message%", message)));
     }

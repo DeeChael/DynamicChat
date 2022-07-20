@@ -4,7 +4,7 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import net.deechael.dynamichat.DyChatPlugin;
 import net.deechael.dynamichat.api.Channel;
-import net.deechael.dynamichat.api.ChatManager;
+import net.deechael.dynamichat.api.BukkitChatManager;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -42,9 +42,9 @@ public class DynamicChatPlaceholder extends PlaceholderExpansion {
     @Nullable
     public String onPlaceholderRequest(Player player, @NotNull String identifier) {
         return switch (identifier) {
-            case "currentChannel" -> ChatManager.getManager().getPlayerUser(player).getCurrent().getName();
+            case "currentChannel" -> BukkitChatManager.getManager().getBukkitPlayerUser(player).getCurrent().getName();
             case "currentChannelDisplay" ->
-                    ChatManager.getManager().getPlayerUser(player).getCurrent().getDisplayName();
+                    BukkitChatManager.getManager().getBukkitPlayerUser(player).getCurrent().getDisplayName();
             default -> null;
         };
     }

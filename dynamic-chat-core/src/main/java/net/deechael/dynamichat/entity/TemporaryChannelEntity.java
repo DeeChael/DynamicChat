@@ -1,6 +1,7 @@
 package net.deechael.dynamichat.entity;
 
-import net.deechael.dynamichat.api.ChatManager;
+import net.deechael.dynamichat.api.BukkitUser;
+import net.deechael.dynamichat.api.BukkitChatManager;
 import net.deechael.dynamichat.api.TemporaryChannel;
 import net.deechael.dynamichat.api.User;
 import net.deechael.dynamichat.util.ConfigUtils;
@@ -32,8 +33,8 @@ public class TemporaryChannelEntity extends ChannelEntity implements TemporaryCh
     @Override
     public void drop() {
         check();
-        for (User user : this.getUsers()) {
-            removeUser(user);
+        for (BukkitUser bukkitUser : this.getUsers()) {
+            removeUser(bukkitUser);
         }
         dropped = true;
     }
@@ -44,10 +45,10 @@ public class TemporaryChannelEntity extends ChannelEntity implements TemporaryCh
     }
 
     @Override
-    public void addUser(User user) {
+    public void addUser(User bukkitUser) {
         check();
-        if (!this.getUsersRaw().contains((UserEntity) user)) {
-            this.getUsersRaw().add((UserEntity) user);
+        if (!this.getUsersRaw().contains((BukkitUserEntity) bukkitUser)) {
+            this.getUsersRaw().add((BukkitUserEntity) bukkitUser);
         }
     }
 
@@ -58,13 +59,13 @@ public class TemporaryChannelEntity extends ChannelEntity implements TemporaryCh
     }
 
     @Override
-    public List<UserEntity> getUsers() {
+    public List<BukkitUserEntity> getUsers() {
         check();
         return super.getUsers();
     }
 
     @Override
-    public List<UserEntity> getUsersRaw() {
+    public List<BukkitUserEntity> getUsersRaw() {
         check();
         return super.getUsersRaw();
     }
@@ -87,11 +88,11 @@ public class TemporaryChannelEntity extends ChannelEntity implements TemporaryCh
     }
 
     @Override
-    public void removeUser(User user) {
+    public void removeUser(User bukkitUser) {
         check();
-        if (user.getCurrent() == this) {
-            ((UserEntity) user).setCurrent((ChannelEntity) ChatManager.getManager().getGlobal());
-            this.getUsersRaw().remove(user);
+        if (bukkitUser.getCurrent() == this) {
+            ((BukkitUserEntity) bukkitUser).setCurrent((ChannelEntity) BukkitChatManager.getManager().getGlobal());
+            this.getUsersRaw().remove(bukkitUser);
         }
     }
 

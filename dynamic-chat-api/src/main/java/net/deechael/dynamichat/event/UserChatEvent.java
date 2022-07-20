@@ -1,7 +1,7 @@
 package net.deechael.dynamichat.event;
 
+import net.deechael.dynamichat.api.BukkitUser;
 import net.deechael.dynamichat.api.Channel;
-import net.deechael.dynamichat.api.User;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -13,16 +13,16 @@ public final class UserChatEvent extends Event implements Cancellable {
 
     private final static HandlerList handlerList = new HandlerList();
 
-    private final User user;
+    private final BukkitUser bukkitUser;
     private final Channel channel;
     private final String format;
     private final String message;
-    private final List<User> recipients;
+    private final List<BukkitUser> recipients;
     private boolean cancelled = false;
 
-    public UserChatEvent(User user, Channel channel, String format, String message, List<User> recipients) {
+    public UserChatEvent(BukkitUser bukkitUser, Channel channel, String format, String message, List<BukkitUser> recipients) {
         super(true);
-        this.user = user;
+        this.bukkitUser = bukkitUser;
         this.channel = channel;
         this.format = format;
         this.message = message;
@@ -33,8 +33,8 @@ public final class UserChatEvent extends Event implements Cancellable {
         return handlerList;
     }
 
-    public User getUser() {
-        return user;
+    public BukkitUser getUser() {
+        return bukkitUser;
     }
 
     public Channel getChannel() {
@@ -49,7 +49,7 @@ public final class UserChatEvent extends Event implements Cancellable {
         return message;
     }
 
-    public List<User> getRecipients() {
+    public List<BukkitUser> getRecipients() {
         return recipients;
     }
 

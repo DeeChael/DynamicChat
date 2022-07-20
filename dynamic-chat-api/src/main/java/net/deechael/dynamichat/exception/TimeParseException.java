@@ -1,6 +1,6 @@
 package net.deechael.dynamichat.exception;
 
-public class TimeParseException extends RuntimeException {
+public final class TimeParseException extends RuntimeException {
 
     public TimeParseException() {
         super();

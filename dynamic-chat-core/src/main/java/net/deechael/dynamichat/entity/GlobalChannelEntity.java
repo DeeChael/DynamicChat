@@ -1,6 +1,6 @@
 package net.deechael.dynamichat.entity;
 
-import net.deechael.dynamichat.api.ChatManager;
+import net.deechael.dynamichat.api.BukkitChatManager;
 import net.deechael.dynamichat.util.ConfigUtils;
 import net.deechael.useless.objs.TriObj;
 import org.bukkit.Bukkit;
@@ -22,18 +22,18 @@ public class GlobalChannelEntity extends ChannelEntity {
     }
 
     void broadcast0(String message) {
-        for (UserEntity user : this.getUsers()) {
+        for (BukkitUserEntity user : this.getUsers()) {
             user.getSender().sendMessage(message);
         }
     }
 
     @Override
-    public List<UserEntity> getUsers() {
-        List<UserEntity> users = new ArrayList<>();
+    public List<BukkitUserEntity> getUsers() {
+        List<BukkitUserEntity> users = new ArrayList<>();
         for (Player player : Bukkit.getOnlinePlayers()) {
-            users.add((UserEntity) ChatManager.getManager().getUser(player));
+            users.add((BukkitUserEntity) BukkitChatManager.getManager().getBukkitUser(player));
         }
-        users.add((UserEntity) ChatManager.getManager().getUser(Bukkit.getConsoleSender()));
+        users.add((BukkitUserEntity) BukkitChatManager.getManager().getBukkitUser(Bukkit.getConsoleSender()));
         return users;
     }
 

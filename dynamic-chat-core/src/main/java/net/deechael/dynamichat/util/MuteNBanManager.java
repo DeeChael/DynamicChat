@@ -20,9 +20,6 @@ import java.util.List;
 
 public final class MuteNBanManager {
 
-    private MuteNBanManager() {
-    }
-
     public static FoObj<Boolean, String, Date, String> isNowBanned(OfflinePlayer player) {
         File playerFile = new File(new File(DyChatPlugin.getInstance().getDataFolder(), "players"), player.getUniqueId() + ".yml");
         if (playerFile.exists() && playerFile.isFile()) {
@@ -351,6 +348,9 @@ public final class MuteNBanManager {
             }
         }
         return null;
+    }
+
+    private MuteNBanManager() {
     }
 
 }

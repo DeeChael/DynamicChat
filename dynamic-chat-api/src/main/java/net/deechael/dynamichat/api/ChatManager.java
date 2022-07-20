@@ -3,68 +3,51 @@ package net.deechael.dynamichat.api;
 import net.deechael.dynamichat.annotation.Included;
 import net.deechael.dynamichat.annotation.NotIncluded;
 import net.deechael.dynamichat.object.Time;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
 
-public abstract class ChatManager {
+public interface ChatManager {
 
-    private static ChatManager manager = null;
+    Channel getChannel(String name);
 
-    public static ChatManager getManager() {
-        return manager;
-    }
+    List<? extends Channel> getChannels();
 
-    public static void setManager(ChatManager manager) {
-        if (ChatManager.manager != null) {
-            throw new RuntimeException("You can't set manager because it exists");
-        }
-        ChatManager.manager = manager;
-    }
+    List<? extends TemporaryChannel> getTemporaryChannels();
 
-    public abstract User getUser(CommandSender sender);
+    Channel getGlobal();
 
-    public abstract PlayerUser getPlayerUser(Player player);
+    TemporaryChannel createTemporaryChannel(@Nullable String displayName, @Nullable String format);
 
-    public abstract Channel getChannel(String name);
+    void registerButton(int index, MessageButton button);
 
-    public abstract List<? extends Channel> getChannels();
+    Map<Integer, ? extends MessageButton> getButtons();
 
-    public abstract List<? extends TemporaryChannel> getTemporaryChannels();
+    int getButtonMaxIndex();
 
-    public abstract Channel getGlobal();
+    boolean languageFollowClient();
 
-    public abstract TemporaryChannel createTemporaryChannel(@Nullable String displayName, @Nullable String format);
+    String getDefaultLanguage();
 
-    public abstract void registerButton(int index, MessageButton button);
+    int getIndex(MuteMessage message);
 
-    public abstract Map<Integer, ? extends MessageButton> getButtons();
+    MuteMessage getMessageByIndex(int index);
 
-    public abstract int getButtonMaxIndex();
+    MuteMessage getMessageById(String id);
 
-    public abstract boolean languageFollowClient();
+    Context getContext(@Included int startIndex, @NotIncluded int endIndex);
 
-    public abstract String getDefaultLanguage();
+    Context getContext(MuteMessage startMessage, int amount);
 
-    public abstract int getIndex(MuteMessage message);
+    int recordedMessages();
 
-    public abstract MuteMessage getMessageByIndex(int index);
+    Time createTime(int years, int months, int weeks, int days, int hours, int minutes, int seconds);
 
-    public abstract MuteMessage getMessageById(String id);
+    Time createTime(long seconds);
 
-    public abstract Context getContext(@Included int startIndex, @NotIncluded int endIndex);
+    Time parseTime(String timeString);
 
-    public abstract Context getContext(MuteMessage startMessage, int amount);
-
-    public abstract int recordedMessages();
-
-    public abstract Time createTime(int years, int months, int weeks, int days, int hours, int minutes, int seconds);
-
-    public abstract Time createTime(long seconds);
-
-    public abstract Time parseTime(String timeString);
+    BanIPManager getBanIPManager();
 
 }

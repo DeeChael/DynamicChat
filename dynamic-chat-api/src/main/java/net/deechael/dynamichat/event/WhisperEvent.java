@@ -1,6 +1,6 @@
 package net.deechael.dynamichat.event;
 
-import net.deechael.dynamichat.api.User;
+import net.deechael.dynamichat.api.BukkitUser;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -10,15 +10,15 @@ public final class WhisperEvent extends Event implements Cancellable {
 
     private final static HandlerList handlerList = new HandlerList();
 
-    private final User sender;
+    private final BukkitUser sender;
 
-    private final User receiver;
+    private final BukkitUser receiver;
 
     private String message;
 
     private boolean cancelled = false;
 
-    public WhisperEvent(User sender, User receiver, String message) {
+    public WhisperEvent(BukkitUser sender, BukkitUser receiver, String message) {
         this.sender = sender;
         this.receiver = receiver;
         this.message = message;
@@ -28,11 +28,11 @@ public final class WhisperEvent extends Event implements Cancellable {
         return handlerList;
     }
 
-    public User getSender() {
+    public BukkitUser getSender() {
         return sender;
     }
 
-    public User getReceiver() {
+    public BukkitUser getReceiver() {
         return receiver;
     }
 

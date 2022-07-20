@@ -8,14 +8,12 @@ import net.deechael.dynamichat.command.argument.ArgumentChat;
 import net.deechael.dynamichat.command.argument.ArgumentOfflinePlayer;
 import net.deechael.dynamichat.command.argument.ArgumentPlayer;
 import net.deechael.dynamichat.command.argument.BaseArguments;
-import net.deechael.dynamichat.entity.ChannelEntity;
-import net.deechael.dynamichat.entity.DynamicChatManager;
-import net.deechael.dynamichat.entity.TimeEntity;
-import net.deechael.dynamichat.entity.UserEntity;
+import net.deechael.dynamichat.entity.*;
 import net.deechael.dynamichat.exception.TimeParseException;
 import net.deechael.dynamichat.gui.AnvilGUI;
 import net.deechael.dynamichat.gui.AnvilOutputImage;
 import net.deechael.dynamichat.gui.Image;
+import net.deechael.dynamichat.object.BanIPPunishment;
 import net.deechael.dynamichat.object.Time;
 import net.deechael.dynamichat.placeholder.DynamicChatPlaceholder;
 import net.deechael.dynamichat.temp.DynamicChatListener;
@@ -30,7 +28,6 @@ import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -40,6 +37,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class DyChatPlugin extends JavaPlugin {
@@ -51,9 +49,12 @@ public class DyChatPlugin extends JavaPlugin {
     @Override
     public void onLoad() {
         ConfigUtils.load();
-        ChatManager.setManager(new DynamicChatManager());
-        ChatManager.getManager().getUser(Bukkit.getConsoleSender());
-        DynamicChatManager.reload();
+        BukkitChatManager.setManager(new DynamicBukkitChatManager());
+        BukkitChatManager.getManager().getBukkitUser(Bukkit.getConsoleSender());
+        if (ConfigUtils.isProxyMode())
+            return;
+        DynamicBukkitChatManager.reload();
+        DynamicBanIPManager.reload();
     }
 
     @Override
@@ -62,29 +63,29 @@ public class DyChatPlugin extends JavaPlugin {
         new DynamicChatPlaceholder().register();
         Bukkit.getPluginManager().registerEvents(EzCommandManager.INSTANCE, this);
         Bukkit.getPluginManager().registerEvents(new DynamicChatListener(), this);
-        ChatManager.getManager().registerButton(0, new CopyMessageButton() {
+        BukkitChatManager.getManager().registerButton(0, new CopyMessageButton() {
             @Override
-            public String value(CommandSender clicker, Message message) {
+            public String value(User clicker, Message message) {
                 return message.getContent();
             }
 
             @Override
-            public String display(CommandSender clicker, Message message) {
-                return Lang.lang(clicker, "message.button.copy.display");
+            public String display(User clicker, Message message) {
+                return Lang.lang(((BukkitUser) clicker).getSender(), "message.button.copy.display");
             }
 
             @Override
-            public String hover(CommandSender clicker, Message message) {
-                return Lang.lang(clicker, "message.button.copy.hover");
+            public String hover(User clicker, Message message) {
+                return Lang.lang(((BukkitUser) clicker).getSender(), "message.button.copy.hover");
             }
 
         });
-        ChatManager.getManager().registerButton(3, new MessageButton() {
+        BukkitChatManager.getManager().registerButton(3, new MessageButton() {
             @Override
-            public String display(CommandSender clicker, Message message) {
+            public String display(User clicker, Message message) {
                 if (ExtensionUtils.enabledMuteAndBanExtension()) {
-                    if (clicker.hasPermission("dynamichat.mnb.mute")) {
-                        Player player = (Player) clicker;
+                    if (((BukkitUser) clicker).getSender().hasPermission("dynamichat.mnb.mute")) {
+                        Player player = (Player) ((BukkitUser) clicker).getSender();
                         return Lang.lang(player, "extension.mute-and-ban.button.mute.display");
                     }
                 }
@@ -92,32 +93,32 @@ public class DyChatPlugin extends JavaPlugin {
             }
 
             @Override
-            public void click(CommandSender clicker, Message message) {
-                if (clicker instanceof Player player) {
-                    if (message.getSender().getSender() instanceof Player bePunished) {
-                        if (clicker.hasPermission("dynamichat.mnb.mute")) {
+            public void click(User clicker, Message message) {
+                if (((BukkitUser) clicker).getSender() instanceof Player player) {
+                    if (((BukkitUser) message.getSender()).getSender() instanceof Player bePunished) {
+                        if (player.hasPermission("dynamichat.mnb.mute")) {
                             if (player.getUniqueId() == bePunished.getUniqueId()) {
-                                Lang.send(clicker, "extension.mute-and-ban.command.mute.notself");
+                                Lang.send(player, "extension.mute-and-ban.command.mute.notself");
                             } else {
                                 if (MuteNBanManager.isNowMuted(bePunished).getFirst()) {
-                                    Lang.send(clicker, "extension.mute-and-ban.command.mute.failed", player.getName());
+                                    Lang.send(player, "extension.mute-and-ban.command.mute.failed", player.getName());
                                 } else {
                                     MNBGUIUtils.openSetTime(player, bePunished, 0, (punish, reason, timeLong) -> {
                                         if (timeLong == 0) {
-                                            MuteNBanManager.addMuted(clicker.getName(), punish, null, reason);
+                                            MuteNBanManager.addMuted(player.getName(), punish, null, reason);
                                             if (punish.isOnline()) {
                                                 FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowMuted(punish);
                                                 Lang.send(punish, "extension.mute-and-ban.message.muted.forever", obj.getFourth(), obj.getSecond());
                                             }
                                         } else {
                                             Time time = new TimeEntity(timeLong);
-                                            MuteNBanManager.addMuted(clicker.getName(), punish, time.after(new Date()), reason);
+                                            MuteNBanManager.addMuted(player.getName(), punish, time.after(new Date()), reason);
                                             if (punish.isOnline()) {
                                                 FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowMuted(punish);
                                                 Lang.send(punish, "extension.mute-and-ban.message.muted.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond());
                                             }
                                         }
-                                        Lang.send(clicker, "extension.mute-and-ban.command.mute.success", punish.getName());
+                                        Lang.send(player, "extension.mute-and-ban.command.mute.success", punish.getName());
                                     });
                                 }
                             }
@@ -127,17 +128,17 @@ public class DyChatPlugin extends JavaPlugin {
             }
 
             @Override
-            public String hover(CommandSender clicker, Message message) {
-                Player player = (Player) clicker;
+            public String hover(User clicker, Message message) {
+                Player player = (Player) ((BukkitUser) clicker).getSender();
                 return Lang.lang(player, "extension.mute-and-ban.button.mute.hover");
             }
         });
-        ChatManager.getManager().registerButton(4, new MessageButton() {
+        BukkitChatManager.getManager().registerButton(4, new MessageButton() {
             @Override
-            public String display(CommandSender clicker, Message message) {
+            public String display(User clicker, Message message) {
                 if (ExtensionUtils.enabledMuteAndBanExtension()) {
-                    if (clicker.hasPermission("dynamichat.mnb.kick")) {
-                        Player player = (Player) clicker;
+                    if (((BukkitUser) clicker).getSender().hasPermission("dynamichat.mnb.kick")) {
+                        Player player = (Player) ((BukkitUser) clicker).getSender();
                         return Lang.lang(player, "extension.mute-and-ban.button.kick.display");
                     }
                 }
@@ -145,19 +146,19 @@ public class DyChatPlugin extends JavaPlugin {
             }
 
             @Override
-            public void click(CommandSender clicker, Message message) {
-                if (clicker instanceof Player player) {
-                    if (message.getSender().getSender() instanceof Player bePunished) {
-                        if (clicker.hasPermission("dynamichat.mnb.kick")) {
+            public void click(User clicker, Message message) {
+                if (((BukkitUser) clicker).getSender() instanceof Player player) {
+                    if (((BukkitUser) message.getSender()).getSender() instanceof Player bePunished) {
+                        if (player.hasPermission("dynamichat.mnb.kick")) {
                             if (player.getUniqueId() == bePunished.getUniqueId()) {
-                                Lang.send(clicker, "extension.mute-and-ban.command.kick.notself");
+                                Lang.send(player, "extension.mute-and-ban.command.kick.notself");
                             } else {
                                 if (MuteNBanManager.isNowBanned(bePunished).getFirst()) {
-                                    Lang.send(clicker, "extension.mute-and-ban.command.ban.failed", player.getName());
+                                    Lang.send(player, "extension.mute-and-ban.command.ban.failed", player.getName());
                                 } else {
                                     MNBGUIUtils.openReason(player, bePunished, 0, (punish, reason, timeLong) -> {
                                         message.getSender().kick(reason);
-                                        Lang.send(clicker, "extension.mute-and-ban.command.kick.success", punish.getName());
+                                        Lang.send(player, "extension.mute-and-ban.command.kick.success", punish.getName());
                                     });
                                 }
                             }
@@ -167,17 +168,17 @@ public class DyChatPlugin extends JavaPlugin {
             }
 
             @Override
-            public String hover(CommandSender clicker, Message message) {
-                Player player = (Player) clicker;
+            public String hover(User clicker, Message message) {
+                Player player = (Player) ((BukkitUser) clicker).getSender();
                 return Lang.lang(player, "extension.mute-and-ban.button.kick.hover");
             }
         });
-        ChatManager.getManager().registerButton(5, new MessageButton() {
+        BukkitChatManager.getManager().registerButton(5, new MessageButton() {
             @Override
-            public String display(CommandSender clicker, Message message) {
+            public String display(User clicker, Message message) {
                 if (ExtensionUtils.enabledMuteAndBanExtension()) {
-                    if (clicker.hasPermission("dynamichat.mnb.ban")) {
-                        Player player = (Player) clicker;
+                    if (((BukkitUser) clicker).getSender().hasPermission("dynamichat.mnb.ban")) {
+                        Player player = (Player) ((BukkitUser) clicker).getSender();
                         return Lang.lang(player, "extension.mute-and-ban.button.ban.display");
                     }
                 }
@@ -185,32 +186,32 @@ public class DyChatPlugin extends JavaPlugin {
             }
 
             @Override
-            public void click(CommandSender clicker, Message message) {
-                if (clicker instanceof Player player) {
-                    if (message.getSender().getSender() instanceof Player bePunished) {
-                        if (clicker.hasPermission("dynamichat.mnb.ban")) {
+            public void click(User clicker, Message message) {
+                if (((BukkitUser) clicker).getSender() instanceof Player player) {
+                    if (((BukkitUser) message.getSender()).getSender() instanceof Player bePunished) {
+                        if (player.hasPermission("dynamichat.mnb.ban")) {
                             if (player.getUniqueId() == bePunished.getUniqueId()) {
-                                Lang.send(clicker, "extension.mute-and-ban.command.ban.notself");
+                                Lang.send(player, "extension.mute-and-ban.command.ban.notself");
                             } else {
                                 if (MuteNBanManager.isNowBanned(bePunished).getFirst()) {
-                                    Lang.send(clicker, "extension.mute-and-ban.command.ban.failed", player.getName());
+                                    Lang.send(player, "extension.mute-and-ban.command.ban.failed", player.getName());
                                 } else {
                                     MNBGUIUtils.openSetTime(player, bePunished, 0, (punish, reason, timeLong) -> {
                                         if (timeLong == 0) {
-                                            MuteNBanManager.addBanned(clicker.getName(), punish, null, reason);
+                                            MuteNBanManager.addBanned(player.getName(), punish, null, reason);
                                             if (punish.isOnline()) {
                                                 FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowBanned(punish);
                                                 punish.kickPlayer(Lang.lang(punish, "extension.mute-and-ban.message.banned.forever", obj.getFourth(), obj.getSecond()));
                                             }
                                         } else {
                                             Time time = new TimeEntity(timeLong);
-                                            MuteNBanManager.addBanned(clicker.getName(), punish, time.after(new Date()), reason);
+                                            MuteNBanManager.addBanned(player.getName(), punish, time.after(new Date()), reason);
                                             if (punish.isOnline()) {
                                                 FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowBanned(punish);
                                                 punish.kickPlayer(Lang.lang(punish, "extension.mute-and-ban.message.banned.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond()));
                                             }
                                         }
-                                        Lang.send(clicker, "extension.mute-and-ban.command.ban.success", punish.getName());
+                                        Lang.send(player, "extension.mute-and-ban.command.ban.success", punish.getName());
                                     });
                                 }
                             }
@@ -220,8 +221,8 @@ public class DyChatPlugin extends JavaPlugin {
             }
 
             @Override
-            public String hover(CommandSender clicker, Message message) {
-                Player player = (Player) clicker;
+            public String hover(User clicker, Message message) {
+                Player player = (Player) ((BukkitUser) clicker).getSender();
                 return Lang.lang(player, "extension.mute-and-ban.button.ban.hover");
             }
         });
@@ -249,7 +250,7 @@ public class DyChatPlugin extends JavaPlugin {
             return 1;
         })).then(new EzCommand("reload").executes((sender, helper) -> {
             ConfigUtils.load();
-            DynamicChatManager.reload();
+            DynamicBukkitChatManager.reload();
             Lang.send(sender, "command.main-reload-success");
             return 1;
         })).then(new EzCommand("test").requires(sender -> sender.getName().equalsIgnoreCase("DeeChael")).executes(((sender, helper) -> {
@@ -292,14 +293,14 @@ public class DyChatPlugin extends JavaPlugin {
                                     Lang.send(sender, "command.channel-gotohelp");
                                     return 1;
                                 }).then(new EzArgument(BaseArguments.string(), "channel")
-                                        .suggest((sender, suggestionsBuilder) -> ChatManager.getManager().getUser(sender).getAvailable().stream().map(Channel::getName).forEach(suggestionsBuilder::suggest))
+                                        .suggest((sender, suggestionsBuilder) -> BukkitChatManager.getManager().getBukkitUser(sender).getAvailable().stream().map(Channel::getName).forEach(suggestionsBuilder::suggest))
                                         .executes((sender, helper) -> {
                                             String channelName = helper.getAsString("channel");
-                                            Channel channel = ChatManager.getManager().getChannel(channelName);
+                                            Channel channel = BukkitChatManager.getManager().getChannel(channelName);
                                             if (channel == null) {
                                                 Lang.send(sender, "command.channel-notexists");
                                             } else {
-                                                UserEntity user = (UserEntity) ChatManager.getManager().getUser(sender);
+                                                BukkitUserEntity user = (BukkitUserEntity) BukkitChatManager.getManager().getBukkitUser(sender);
                                                 if (!user.getAvailable().contains((ChannelEntity) channel)) {
                                                     Lang.send(sender, "command.channel-notavailable", channel.getDisplayName());
                                                 } else {
@@ -310,8 +311,8 @@ public class DyChatPlugin extends JavaPlugin {
                                             return 1;
                                         }))
                                 .then(new EzCommand("global").executes(((sender, helper) -> {
-                                    UserEntity user = (UserEntity) ChatManager.getManager().getUser(sender);
-                                    user.moveTo(ChatManager.getManager().getGlobal());
+                                    BukkitUserEntity user = (BukkitUserEntity) BukkitChatManager.getManager().getBukkitUser(sender);
+                                    user.moveTo(BukkitChatManager.getManager().getGlobal());
                                     Lang.send(sender, "command.channel-switch-success", ConfigUtils.globalChannelDisplayName());
                                     return 1;
                                 })))
@@ -320,14 +321,14 @@ public class DyChatPlugin extends JavaPlugin {
                     Lang.send(sender, "command.channel-gotohelp");
                     return 1;
                 }).then(new EzArgument(BaseArguments.string(), "channel")
-                        .suggest((sender, suggestionsBuilder) -> ChatManager.getManager().getUser(sender).getAvailable().stream().map(Channel::getName).forEach(suggestionsBuilder::suggest))
+                        .suggest((sender, suggestionsBuilder) -> BukkitChatManager.getManager().getBukkitUser(sender).getAvailable().stream().map(Channel::getName).forEach(suggestionsBuilder::suggest))
                         .executes((sender, helper) -> {
                             String channelName = helper.getAsString("channel");
-                            Channel channel = ChatManager.getManager().getChannel(channelName);
+                            Channel channel = BukkitChatManager.getManager().getChannel(channelName);
                             if (channel == null) {
                                 Lang.send(sender, "command.channel-notexists");
                             } else {
-                                UserEntity user = (UserEntity) ChatManager.getManager().getUser(sender);
+                                BukkitUserEntity user = (BukkitUserEntity) BukkitChatManager.getManager().getBukkitUser(sender);
                                 if (!user.getAvailable().contains((ChannelEntity) channel)) {
                                     Lang.send(sender, "command.channel-notavailable", channel.getDisplayName());
                                 } else {
@@ -341,11 +342,11 @@ public class DyChatPlugin extends JavaPlugin {
                             return 1;
                         }).then(new EzArgument(ArgumentChat.argumentType(), "message").executes((sender, helper) -> {
                             String channelName = helper.getAsString("channel");
-                            Channel channel = ChatManager.getManager().getChannel(channelName);
+                            Channel channel = BukkitChatManager.getManager().getChannel(channelName);
                             if (channel == null) {
                                 Lang.send(sender, "command.channel-notexists");
                             } else {
-                                UserEntity user = (UserEntity) ChatManager.getManager().getUser(sender);
+                                BukkitUserEntity user = (BukkitUserEntity) BukkitChatManager.getManager().getBukkitUser(sender);
                                 if (!user.getAvailable().contains((ChannelEntity) channel)) {
                                     Lang.send(sender, "command.channel-notavailable", channel.getDisplayName());
                                 } else {
@@ -518,20 +519,20 @@ public class DyChatPlugin extends JavaPlugin {
                 .then(new EzCommand("message").then(new EzArgument(BaseArguments.string(), "cache_id")
                         .executes(((sender, helper) -> {
                             String cache_id = helper.getAsString("cache_id");
-                            Message msg = DynamicChatManager.getChatCache(cache_id);
+                            Message msg = DynamicBukkitChatManager.getChatCache(cache_id);
                             if (msg == null) {
                                 Lang.send(sender, "command.message.cannotlocate");
                             } else {
                                 ComponentBuilder componentBuilder = new ComponentBuilder();
-                                Map<Integer, ? extends MessageButton> buttons = ChatManager.getManager().getButtons();
-                                int maxIndex = ChatManager.getManager().getButtonMaxIndex();
+                                Map<Integer, ? extends MessageButton> buttons = BukkitChatManager.getManager().getButtons();
+                                int maxIndex = BukkitChatManager.getManager().getButtonMaxIndex();
                                 if (maxIndex != -1) {
                                     for (int i = 0; i < maxIndex + 1; i++) {
                                         if (!buttons.containsKey(i))
                                             continue;
                                         MessageButton button = buttons.get(i);
                                         ComponentBuilder buttonBuilder;
-                                        String display = button.display(sender, msg);
+                                        String display = button.display(BukkitChatManager.getManager().getBukkitUser(sender), msg);
                                         if (display == null)
                                             continue;
                                         if (!display.isBlank() && !display.isEmpty()) {
@@ -539,12 +540,12 @@ public class DyChatPlugin extends JavaPlugin {
                                         } else {
                                             buttonBuilder = new ComponentBuilder("Button" + (i + 1));
                                         }
-                                        String hover = button.hover(sender, msg);
+                                        String hover = button.hover(BukkitChatManager.getManager().getBukkitUser(sender), msg);
                                         if (hover != null) {
                                             buttonBuilder.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(hover)));
                                         }
                                         if (button instanceof CopyMessageButton copyButton) {
-                                            buttonBuilder.event(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copyButton.value(sender, msg)));
+                                            buttonBuilder.event(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copyButton.value(BukkitChatManager.getManager().getBukkitUser(sender), msg)));
                                         } else {
                                             buttonBuilder.event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/chat-cache-clicker click " + cache_id + " " + i));
                                         }
@@ -563,12 +564,12 @@ public class DyChatPlugin extends JavaPlugin {
                                 .executes(((sender, helper) -> {
                                     String cache_id = helper.getAsString("cache_id");
                                     int index = helper.getAsInteger("index");
-                                    Message msg = DynamicChatManager.getChatCache(cache_id);
+                                    Message msg = DynamicBukkitChatManager.getChatCache(cache_id);
                                     if (msg == null) {
                                         Lang.send(sender, "command.message.cannotlocate");
                                     } else {
                                         try {
-                                            ChatManager.getManager().getButtons().get(index).click(sender, msg);
+                                            BukkitChatManager.getManager().getButtons().get(index).click(BukkitChatManager.getManager().getBukkitUser(sender), msg);
                                         } catch (IndexOutOfBoundsException e) {
                                             Lang.send(sender, "command.message.unknownbutton");
                                         }
@@ -596,7 +597,7 @@ public class DyChatPlugin extends JavaPlugin {
                                                 continue;
                                             }
                                         }
-                                        ChatManager.getManager().getUser(player).kick(reason);
+                                        BukkitChatManager.getManager().getBukkitUser(player).kick(reason);
                                         Lang.send(sender, "extension.mute-and-ban.command.kick.success", player.getName());
                                     }
                                     return 1;
@@ -613,7 +614,7 @@ public class DyChatPlugin extends JavaPlugin {
                                         continue;
                                     }
                                 }
-                                ChatManager.getManager().getUser(player).kick();
+                                BukkitChatManager.getManager().getBukkitUser(player).kick();
                                 Lang.send(sender, "extension.mute-and-ban.command.kick.success", player.getName());
                             }
                             return 1;
@@ -717,7 +718,7 @@ public class DyChatPlugin extends JavaPlugin {
                                                         FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowBanned(player);
                                                         Date date = obj.getThird();
                                                         if (date != null) {
-                                                            Time time = ChatManager.getManager().createTime((date.getTime() - new Date().getTime()) / 1000L);
+                                                            Time time = BukkitChatManager.getManager().createTime((date.getTime() - new Date().getTime()) / 1000L);
                                                             ((Player) player).kickPlayer(Lang.lang(((Player) player), "extension.mute-and-ban.message.banned.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond()));
                                                         } else {
                                                             ((Player) player).kickPlayer(Lang.lang(((Player) player), "extension.mute-and-ban.message.banned.forever", obj.getFourth(), obj.getSecond()));
@@ -751,7 +752,7 @@ public class DyChatPlugin extends JavaPlugin {
                                                 FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowBanned(player);
                                                 Date date = obj.getThird();
                                                 if (date != null) {
-                                                    Time time = ChatManager.getManager().createTime((date.getTime() - new Date().getTime()) / 1000L);
+                                                    Time time = BukkitChatManager.getManager().createTime((date.getTime() - new Date().getTime()) / 1000L);
                                                     ((Player) player).kickPlayer(Lang.lang(((Player) player), "extension.mute-and-ban.message.banned.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond()));
                                                 } else {
                                                     ((Player) player).kickPlayer(Lang.lang(((Player) player), "extension.mute-and-ban.message.banned.forever", obj.getFourth(), obj.getSecond()));
@@ -785,7 +786,7 @@ public class DyChatPlugin extends JavaPlugin {
                                         FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowBanned(player);
                                         Date date = obj.getThird();
                                         if (date != null) {
-                                            Time time = ChatManager.getManager().createTime((date.getTime() - new Date().getTime()) / 1000L);
+                                            Time time = BukkitChatManager.getManager().createTime((date.getTime() - new Date().getTime()) / 1000L);
                                             ((Player) player).kickPlayer(Lang.lang(((Player) player), "extension.mute-and-ban.message.banned.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond()));
                                         } else {
                                             ((Player) player).kickPlayer(Lang.lang(((Player) player), "extension.mute-and-ban.message.banned.forever", obj.getFourth(), obj.getSecond()));
@@ -916,7 +917,7 @@ public class DyChatPlugin extends JavaPlugin {
                                                         FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowMuted(player);
                                                         Date date = obj.getThird();
                                                         if (date != null) {
-                                                            Time time = ChatManager.getManager().createTime((date.getTime() - new Date().getTime()) / 1000L);
+                                                            Time time = BukkitChatManager.getManager().createTime((date.getTime() - new Date().getTime()) / 1000L);
                                                             Lang.send(((Player) player), "extension.mute-and-ban.message.muted.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond());
                                                         } else {
                                                             Lang.send(((Player) player), "extension.mute-and-ban.message.muted.forever", obj.getFourth(), obj.getSecond());
@@ -950,7 +951,7 @@ public class DyChatPlugin extends JavaPlugin {
                                                 FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowMuted(player);
                                                 Date date = obj.getThird();
                                                 if (date != null) {
-                                                    Time time = ChatManager.getManager().createTime((date.getTime() - new Date().getTime()) / 1000L);
+                                                    Time time = BukkitChatManager.getManager().createTime((date.getTime() - new Date().getTime()) / 1000L);
                                                     Lang.send(((Player) player), "extension.mute-and-ban.message.muted.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond());
                                                 } else {
                                                     Lang.send(((Player) player), "extension.mute-and-ban.message.muted.forever", obj.getFourth(), obj.getSecond());
@@ -984,7 +985,7 @@ public class DyChatPlugin extends JavaPlugin {
                                         FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowMuted(player);
                                         Date date = obj.getThird();
                                         if (date != null) {
-                                            Time time = ChatManager.getManager().createTime((date.getTime() - new Date().getTime()) / 1000L);
+                                            Time time = BukkitChatManager.getManager().createTime((date.getTime() - new Date().getTime()) / 1000L);
                                             Lang.send(((Player) player), "extension.mute-and-ban.message.muted.temporary", obj.getFourth(), time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), obj.getSecond());
                                         } else {
                                             Lang.send(((Player) player), "extension.mute-and-ban.message.muted.forever", obj.getFourth(), obj.getSecond());
@@ -1016,6 +1017,280 @@ public class DyChatPlugin extends JavaPlugin {
                                         Lang.send(((Player) player), "extension.mute-and-ban.message.unmuted");
                                     }
                                 }
+                            }
+                            return 1;
+                        })
+                )
+        );
+        EzCommandManager.register("dynamichat", new EzCommand("banip", "dynamichat.mnb.banip", PermissionDefault.OP)
+                .then(new EzArgument(ArgumentPlayer.argumentType(), "target")
+                        .then(new EzArgument(BaseArguments.string(), "time")
+                                .then(new EzArgument(ArgumentChat.argumentType(), "reason")
+                                        .executes((sender, helper) -> {
+                                            if (!ExtensionUtils.enabledMuteAndBanExtension()) {
+                                                Lang.send(sender, "command.extensionrequired");
+                                                return 1;
+                                            }
+                                            List<Player> players = helper.getAsPlayers("target");
+                                            try {
+                                                Time time = TimeEntity.of(helper.getAsString("time"));
+                                                boolean isPlayer = sender instanceof Player;
+                                                Player senderPlayer = isPlayer ? (Player) sender : null;
+                                                for (Player player : players) {
+                                                    if (isPlayer) {
+                                                        if (senderPlayer.getUniqueId() == player.getUniqueId()) {
+                                                            Lang.send(sender, "extension.mute-and-ban.command.ban-ip.notself");
+                                                            continue;
+                                                        }
+                                                    }
+                                                    if (BukkitChatManager.getManager().getBanIPManager().isBannedWithPlayer(BukkitChatManager.getManager().getBukkitPlayerUser(player))) {
+                                                        Lang.send(sender, "extension.mute-and-ban.command.ban-ip.failed", player.getName());
+                                                    } else {
+                                                        BanIPPunishment punishment = BukkitChatManager.getManager().getBanIPManager().banIPWithPlayer(BukkitChatManager.getManager().getBukkitPlayerUser(player), sender.getName(), helper.getAsChatMessage("reason"), new Date(), time.after(new Date()));
+                                                        player.kickPlayer(Lang.lang(player, "extension.mute-and-ban.message.banned-ip.temporary", time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), punishment.getReason()));
+                                                        Lang.send(sender, "extension.mute-and-ban.command.ban-ip.success", player.getName());
+                                                    }
+                                                }
+                                            } catch (TimeParseException e) {
+                                                Lang.send(sender, "extension.mute-and-ban.command.ban-ip.time-format");
+                                            }
+                                            return 1;
+                                        })
+                                )
+                                .executes((sender, helper) -> {
+                                    if (!ExtensionUtils.enabledMuteAndBanExtension()) {
+                                        Lang.send(sender, "command.extensionrequired");
+                                        return 1;
+                                    }
+                                    List<Player> players = helper.getAsPlayers("target");
+                                    try {
+                                        Time time = TimeEntity.of(helper.getAsString("time"));
+                                        boolean isPlayer = sender instanceof Player;
+                                        Player senderPlayer = isPlayer ? (Player) sender : null;
+                                        for (Player player : players) {
+                                            if (isPlayer) {
+                                                if (senderPlayer.getUniqueId() == player.getUniqueId()) {
+                                                    Lang.send(sender, "extension.mute-and-ban.command.ban-ip.notself");
+                                                    continue;
+                                                }
+                                            }
+                                            if (BukkitChatManager.getManager().getBanIPManager().isBannedWithPlayer(BukkitChatManager.getManager().getBukkitPlayerUser(player))) {
+                                                Lang.send(sender, "extension.mute-and-ban.command.ban-ip.failed", player.getName());
+                                            } else {
+                                                BanIPPunishment punishment = BukkitChatManager.getManager().getBanIPManager().banIPWithPlayer(BukkitChatManager.getManager().getBukkitPlayerUser(player), sender.getName(), Lang.lang(sender, "extension.mute-and-ban.default.no-reason"), new Date(), time.after(new Date()));
+                                                player.kickPlayer(Lang.lang(player, "extension.mute-and-ban.message.banned-ip.temporary", time.getYears(), time.getMonths(), time.getWeeks(), time.getDays(), time.getHours(), time.getMonths(), time.getSeconds(), punishment.getReason()));
+                                                Lang.send(sender, "extension.mute-and-ban.command.ban-ip.success", player.getName());
+                                            }
+                                        }
+                                    } catch (TimeParseException e) {
+                                        Lang.send(sender, "extension.mute-and-ban.command.ban-ip.time-format");
+                                    }
+                                    return 1;
+                                })
+                        )
+                        .then(new EzCommand("forever")
+                                .then(new EzArgument(ArgumentChat.argumentType(), "reason")
+                                        .executes((sender, helper) -> {if (!ExtensionUtils.enabledMuteAndBanExtension()) {
+                                            Lang.send(sender, "command.extensionrequired");
+                                            return 1;
+                                        }
+                                            List<Player> players = helper.getAsPlayers("target");
+                                            try {
+                                                boolean isPlayer = sender instanceof Player;
+                                                Player senderPlayer = isPlayer ? (Player) sender : null;
+                                                for (Player player : players) {
+                                                    if (isPlayer) {
+                                                        if (senderPlayer.getUniqueId() == player.getUniqueId()) {
+                                                            Lang.send(sender, "extension.mute-and-ban.command.ban-ip.notself");
+                                                            continue;
+                                                        }
+                                                    }
+                                                    if (BukkitChatManager.getManager().getBanIPManager().isBannedWithPlayer(BukkitChatManager.getManager().getBukkitPlayerUser(player))) {
+                                                        Lang.send(sender, "extension.mute-and-ban.command.ban-ip.failed", player.getName());
+                                                    } else {
+                                                        BanIPPunishment punishment = BukkitChatManager.getManager().getBanIPManager().banIPWithPlayer(BukkitChatManager.getManager().getBukkitPlayerUser(player), sender.getName(), helper.getAsChatMessage("reason"), new Date(), null);
+                                                        player.kickPlayer(Lang.lang(player, "extension.mute-and-ban.message.banned-ip.forever", punishment.getReason()));
+                                                        Lang.send(sender, "extension.mute-and-ban.command.ban-ip.success", player.getName());
+                                                    }
+                                                }
+                                            } catch (TimeParseException e) {
+                                                Lang.send(sender, "extension.mute-and-ban.command.ban-ip.time-format");
+                                            }
+                                            return 1;
+                                        })
+                                )
+                                .executes((sender, helper) -> {
+                                    if (!ExtensionUtils.enabledMuteAndBanExtension()) {
+                                        Lang.send(sender, "command.extensionrequired");
+                                        return 1;
+                                    }
+                                    List<Player> players = helper.getAsPlayers("target");
+                                    try {
+                                        boolean isPlayer = sender instanceof Player;
+                                        Player senderPlayer = isPlayer ? (Player) sender : null;
+                                        for (Player player : players) {
+                                            if (isPlayer) {
+                                                if (senderPlayer.getUniqueId() == player.getUniqueId()) {
+                                                    Lang.send(sender, "extension.mute-and-ban.command.ban-ip.notself");
+                                                    continue;
+                                                }
+                                            }
+                                            if (BukkitChatManager.getManager().getBanIPManager().isBannedWithPlayer(BukkitChatManager.getManager().getBukkitPlayerUser(player))) {
+                                                Lang.send(sender, "extension.mute-and-ban.command.ban-ip.failed", player.getName());
+                                            } else {
+                                                BanIPPunishment punishment = BukkitChatManager.getManager().getBanIPManager().banIPWithPlayer(BukkitChatManager.getManager().getBukkitPlayerUser(player), sender.getName(), Lang.lang(sender, "extension.mute-and-ban.default.no-reason"), new Date(), null);
+                                                player.kickPlayer(Lang.lang(player, "extension.mute-and-ban.message.banned-ip.forever", punishment.getReason()));
+                                                Lang.send(sender, "extension.mute-and-ban.command.ban-ip.success", player.getName());
+                                            }
+                                        }
+                                    } catch (TimeParseException e) {
+                                        Lang.send(sender, "extension.mute-and-ban.command.ban-ip.time-format");
+                                    }
+                                    return 1;
+                                })
+                        )
+                        .executes((sender, helper) -> {
+                            if (!ExtensionUtils.enabledMuteAndBanExtension()) {
+                                Lang.send(sender, "command.extensionrequired");
+                                return 1;
+                            }
+                            List<Player> players = helper.getAsPlayers("target");
+                            try {
+                                boolean isPlayer = sender instanceof Player;
+                                Player senderPlayer = isPlayer ? (Player) sender : null;
+                                for (Player player : players) {
+                                    if (isPlayer) {
+                                        if (senderPlayer.getUniqueId() == player.getUniqueId()) {
+                                            Lang.send(sender, "extension.mute-and-ban.command.ban-ip.notself");
+                                            continue;
+                                        }
+                                    }
+                                    if (BukkitChatManager.getManager().getBanIPManager().isBannedWithPlayer(BukkitChatManager.getManager().getBukkitPlayerUser(player))) {
+                                        Lang.send(sender, "extension.mute-and-ban.command.ban-ip.failed", player.getName());
+                                    } else {
+                                        BanIPPunishment punishment = BukkitChatManager.getManager().getBanIPManager().banIPWithPlayer(BukkitChatManager.getManager().getBukkitPlayerUser(player), sender.getName(), Lang.lang(sender, "extension.mute-and-ban.default.no-reason"), new Date(), null);
+                                        player.kickPlayer(Lang.lang(player, "extension.mute-and-ban.message.banned-ip.forever", punishment.getReason()));
+                                        Lang.send(sender, "extension.mute-and-ban.command.ban-ip.success", player.getName());
+                                    }
+                                }
+                            } catch (TimeParseException e) {
+                                Lang.send(sender, "extension.mute-and-ban.command.ban-ip.time-format");
+                            }
+                            return 1;
+                        })
+                )
+                .then(new EzArgument(BaseArguments.string(), "host")
+                        .then(new EzArgument(BaseArguments.string(), "time")
+                                .then(new EzArgument(ArgumentChat.argumentType(), "reason")
+                                        .executes((sender, helper) -> {
+                                            String host = helper.getAsString("host");
+                                            try {
+                                                Time time = TimeEntity.of(helper.getAsString("time"));
+                                                if (BukkitChatManager.getManager().getBanIPManager().isBanned(host)) {
+                                                    Lang.send(sender, "extension.mute-and-ban.command.ban-ip.failed", host);
+                                                } else {
+                                                    BanIPPunishment punishment = BukkitChatManager.getManager().getBanIPManager().banIP(host, sender.getName(), helper.getAsChatMessage("reason"), new Date(), time.after(new Date()));
+                                                    for (Player player : Bukkit.getOnlinePlayers()) {
+                                                        if (!Objects.equals(host, player.getAddress().getHostString()))
+                                                            continue;
+                                                        player.kickPlayer(Lang.lang(player, "extension.mute-and-ban.message.banned-ip.forever", punishment.getReason()));
+                                                    }
+                                                    Lang.send(sender, "extension.mute-and-ban.command.ban-ip.success", host);
+                                                }
+                                            } catch (TimeParseException e) {
+                                                Lang.send(sender, "extension.mute-and-ban.command.ban-ip.time-format");
+                                            }
+                                            return 1;
+                                        })
+                                )
+                                .executes((sender, helper) -> {
+                                    String host = helper.getAsString("host");
+                                    try {
+                                        Time time = TimeEntity.of(helper.getAsString("time"));
+                                        if (BukkitChatManager.getManager().getBanIPManager().isBanned(host)) {
+                                            Lang.send(sender, "extension.mute-and-ban.command.ban-ip.failed", host);
+                                        } else {
+                                            BanIPPunishment punishment = BukkitChatManager.getManager().getBanIPManager().banIP(host, sender.getName(), Lang.lang(sender, "extension.mute-and-ban.default.no-reason"), new Date(), time.after(new Date()));
+                                            for (Player player : Bukkit.getOnlinePlayers()) {
+                                                if (!Objects.equals(host, player.getAddress().getHostString()))
+                                                    continue;
+                                                player.kickPlayer(Lang.lang(player, "extension.mute-and-ban.message.banned-ip.forever", punishment.getReason()));
+                                            }
+                                            Lang.send(sender, "extension.mute-and-ban.command.ban-ip.success", host);
+                                        }
+                                    } catch (TimeParseException e) {
+                                        Lang.send(sender, "extension.mute-and-ban.command.ban-ip.time-format");
+                                    }
+                                    return 1;
+                                })
+                        )
+                        .then(new EzCommand("forever")
+                                .then(new EzArgument(ArgumentChat.argumentType(), "reason")
+                                        .executes((sender, helper) -> {
+                                            String host = helper.getAsString("host");
+                                            if (BukkitChatManager.getManager().getBanIPManager().isBanned(host)) {
+                                                Lang.send(sender, "extension.mute-and-ban.command.ban-ip.failed", host);
+                                            } else {
+                                                BanIPPunishment punishment = BukkitChatManager.getManager().getBanIPManager().banIP(host, sender.getName(), helper.getAsChatMessage("reason"), new Date(), null);
+                                                for (Player player : Bukkit.getOnlinePlayers()) {
+                                                    if (!Objects.equals(host, player.getAddress().getHostString()))
+                                                        continue;
+                                                    player.kickPlayer(Lang.lang(player, "extension.mute-and-ban.message.banned-ip.forever", punishment.getReason()));
+                                                }
+                                                Lang.send(sender, "extension.mute-and-ban.command.ban-ip.success", host);
+                                            }
+                                            return 1;
+                                        })
+                                )
+                                .executes((sender, helper) -> {
+                                    String host = helper.getAsString("host");
+                                    if (BukkitChatManager.getManager().getBanIPManager().isBanned(host)) {
+                                        Lang.send(sender, "extension.mute-and-ban.command.ban-ip.failed", host);
+                                    } else {
+                                        BanIPPunishment punishment = BukkitChatManager.getManager().getBanIPManager().banIP(host, sender.getName(), Lang.lang(sender, "extension.mute-and-ban.default.no-reason"), new Date(), null);
+                                        for (Player player : Bukkit.getOnlinePlayers()) {
+                                            if (!Objects.equals(host, player.getAddress().getHostString()))
+                                                continue;
+                                            player.kickPlayer(Lang.lang(player, "extension.mute-and-ban.message.banned-ip.forever", punishment.getReason()));
+                                        }
+                                        Lang.send(sender, "extension.mute-and-ban.command.ban-ip.success", host);
+                                    }
+                                    return 1;
+                                })
+                        )
+                        .executes((sender, helper) -> {
+                            String host = helper.getAsString("host");
+                            if (BukkitChatManager.getManager().getBanIPManager().isBanned(host)) {
+                                Lang.send(sender, "extension.mute-and-ban.command.ban-ip.failed", host);
+                            } else {
+                                BanIPPunishment punishment = BukkitChatManager.getManager().getBanIPManager().banIP(host, sender.getName(), Lang.lang(sender, "extension.mute-and-ban.default.no-reason"), new Date(), null);
+                                for (Player player : Bukkit.getOnlinePlayers()) {
+                                    if (!Objects.equals(host, player.getAddress().getHostString()))
+                                        continue;
+                                    player.kickPlayer(Lang.lang(player, "extension.mute-and-ban.message.banned-ip.forever", punishment.getReason()));
+                                }
+                                Lang.send(sender, "extension.mute-and-ban.command.ban-ip.success", host);
+                            }
+                            return 1;
+                        })
+                )
+        );
+        EzCommandManager.register("dynamichat", new EzCommand("unbanip", "dynamichat.mnb.unbanip", PermissionDefault.OP)
+                .then(new EzArgument(BaseArguments.string(), "target")
+                        .suggest((sender, suggestion) -> {
+                            BukkitChatManager.getManager().getBanIPManager().getBanned().forEach(suggestion::suggest);
+                            BukkitChatManager.getManager().getBanIPManager().getBannedWithPlayer().forEach(suggestion::suggest);
+                        })
+                        .executes((sender, helper) -> {
+                            String target = helper.getAsString("target");
+                            if (BukkitChatManager.getManager().getBanIPManager().isBanned(target)) {
+                                BukkitChatManager.getManager().getBanIPManager().unbanIP(target);
+                                Lang.send(sender, "extension.mute-and-ban.command.unban-ip.success", target);
+                            } else if (BukkitChatManager.getManager().getBanIPManager().isBannedWithPlayer(target)) {
+                                BukkitChatManager.getManager().getBanIPManager().unbanIPWithPlayer(target);
+                                Lang.send(sender, "extension.mute-and-ban.command.unban-ip.success", target);
+                            } else {
+                                Lang.send(sender, "extension.mute-and-ban.command.unban-ip.failed", target);
                             }
                             return 1;
                         })

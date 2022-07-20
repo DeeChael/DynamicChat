@@ -4,6 +4,8 @@ import java.util.Date;
 
 public interface BanIPPunishment {
 
+    String getId();
+
     String getIP();
 
     String withUser();
@@ -14,6 +16,10 @@ public interface BanIPPunishment {
 
     Date getEndDate();
 
+    String getReason();
+
     boolean hasUnbanned();
+
+    boolean isForever();
 
 }

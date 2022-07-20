@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ChannelEntity implements Channel {
 
-    private final List<UserEntity> users = new ArrayList<>();
+    private final List<BukkitUserEntity> users = new ArrayList<>();
 
     private final String name;
     private final List<TriObj<String, String, Integer>> permissionFormats = new ArrayList<>();
@@ -30,17 +30,17 @@ public class ChannelEntity implements Channel {
     }
 
     void broadcast0(String message) {
-        for (UserEntity entity : getUsers()) {
+        for (BukkitUserEntity entity : getUsers()) {
             entity.getSender().sendMessage(message);
         }
     }
 
     @Override
-    public List<UserEntity> getUsers() {
+    public List<BukkitUserEntity> getUsers() {
         return new ArrayList<>(this.users);
     }
 
-    public List<UserEntity> getUsersRaw() {
+    public List<BukkitUserEntity> getUsersRaw() {
         return this.users;
     }
 

@@ -3,8 +3,8 @@ package net.deechael.dynamichat.entity;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.deechael.dynamichat.api.BukkitChatManager;
 import net.deechael.dynamichat.api.PlayerBukkitUser;
-import net.deechael.dynamichat.object.Punishment;
-import net.deechael.dynamichat.object.Time;
+import net.deechael.dynamichat.api.Punishment;
+import net.deechael.dynamichat.api.Time;
 import net.deechael.dynamichat.placeholder.DynamicChatPlaceholder;
 import net.deechael.dynamichat.util.*;
 import net.deechael.useless.objs.DuObj;
@@ -49,14 +49,18 @@ public class PlayerBukkitUserEntity extends BukkitUserEntity implements PlayerBu
     public void banIP() {
         if (!ExtensionUtils.enabledMuteAndBanExtension())
             throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
-
+        if (BukkitChatManager.getManager().getBanIPManager().isBannedWithPlayer(this))
+            throw new RuntimeException("The user's ip has been banned already!");
+        BukkitChatManager.getManager().getBanIPManager().banIPWithPlayer(this, "PLUGIN", Lang.lang(this.player, "extension.mute-and-ban.default.no-reason"), new Date(), null);
     }
 
     @Override
     public void unbanIP() {
         if (!ExtensionUtils.enabledMuteAndBanExtension())
             throw new RuntimeException("Extension: Mute And Ban didn't be installed!");
-
+        if (!BukkitChatManager.getManager().getBanIPManager().isBannedWithPlayer(this))
+            throw new RuntimeException("The user's ip hasn't been banned!");
+        BukkitChatManager.getManager().getBanIPManager().unbanIPWithPlayer(this.getName());
     }
 
     @Override

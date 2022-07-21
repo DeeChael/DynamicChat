@@ -1,7 +1,7 @@
 package net.deechael.dynamichat.entity;
 
-import net.deechael.dynamichat.object.Punishment;
-import net.deechael.dynamichat.object.Time;
+import net.deechael.dynamichat.api.Punishment;
+import net.deechael.dynamichat.api.Time;
 import net.deechael.dynamichat.placeholder.DynamicChatPlaceholder;
 import net.deechael.dynamichat.util.*;
 import net.deechael.useless.objs.DuObj;

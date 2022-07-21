@@ -1,12 +1,10 @@
 package net.deechael.dynamichat.temp;
 
 import net.deechael.dynamichat.api.BukkitChatManager;
-import net.deechael.dynamichat.api.ChatManager;
-import net.deechael.dynamichat.entity.BanIPPunishmentEntity;
 import net.deechael.dynamichat.entity.DynamicBukkitChatManager;
-import net.deechael.dynamichat.event.UserChatEvent;
-import net.deechael.dynamichat.object.BanIPPunishment;
-import net.deechael.dynamichat.object.Time;
+import net.deechael.dynamichat.event.bukkit.UserChatEvent;
+import net.deechael.dynamichat.api.BanIPPunishment;
+import net.deechael.dynamichat.api.Time;
 import net.deechael.dynamichat.util.Lang;
 import net.deechael.dynamichat.util.MuteNBanManager;
 import net.deechael.useless.objs.DuObj;

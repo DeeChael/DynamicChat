@@ -1,4 +1,4 @@
-package net.deechael.dynamichat.object;
+package net.deechael.dynamichat.api;
 
 import java.util.Date;
 

@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'maven-publish'
+    id 'signing'
 }
 
 group 'net.deechael'
@@ -25,4 +27,69 @@ dependencies {
     compileOnly 'org.jetbrains:annotations:23.0.0'
     compileOnly "net.deechael:Useless:1.02.0"
     annotationProcessor 'com.velocitypowered:velocity-api:3.0.1'
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'net.deechael'
+            artifactId = 'dynamic-chat-api'
+            version = "1.00.0"
+            from components.java
+
+            pom {
+                name = 'DynamicChatAPI'
+                description = 'API of DynamicChat'
+                url = 'http://www.example.com/library'
+                licenses {
+                    license {
+                        name = 'GNU General Public License v3.0'
+                        url = 'https://www.gnu.org/licenses/gpl-3.0.html'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'deechael'
+                        name = 'DeeChael'
+                        email = 'DeeChael@outlook.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/DeeChael/DynamicChat.git'
+                    developerConnection = 'scm:git:ssh://git@github.com:DeeChael/DynamicChat.git'
+                    url = 'https://github.com/DeeChael/DynamicChat'
+                }
+            }
+        }
+    }
+
+    repositories {
+        var ENV = System.getenv()
+        maven {
+            credentials {
+                username = ENV.get("OSSRH_USERNAME")
+                password = ENV.get("OSSRH_PASSWORD")
+            }
+            name = 'release'
+            url = 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
+        }
+    }
+}
+
+signing {
+    // var ENV = System.getenv()
+    // useInMemoryPgpKeys(ENV.get("SIGNING_KEY_ID"), ENV.get("SIGNING_SECRET_KEY_RING_FILE"), ENV.get("SIGNING_KEY_PASSWORD"))
+    useGpgCmd()
+    sign publishing.publications.maven
+}
+
+javadoc {
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
 }

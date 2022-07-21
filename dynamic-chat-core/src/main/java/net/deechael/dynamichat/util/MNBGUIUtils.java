@@ -3,7 +3,7 @@ package net.deechael.dynamichat.util;
 import net.deechael.dynamichat.DyChatPlugin;
 import net.deechael.dynamichat.entity.TimeEntity;
 import net.deechael.dynamichat.gui.*;
-import net.deechael.dynamichat.object.Time;
+import net.deechael.dynamichat.api.Time;
 import net.deechael.useless.function.parameters.TriParameter;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

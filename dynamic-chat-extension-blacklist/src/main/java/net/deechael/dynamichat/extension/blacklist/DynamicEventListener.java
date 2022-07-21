@@ -2,9 +2,9 @@ package net.deechael.dynamichat.extension.blacklist;
 
 import net.deechael.dynamichat.api.PlayerBukkitUser;
 import net.deechael.dynamichat.api.BukkitUser;
-import net.deechael.dynamichat.event.CommandSayEvent;
-import net.deechael.dynamichat.event.UserChatEvent;
-import net.deechael.dynamichat.event.WhisperEvent;
+import net.deechael.dynamichat.event.bukkit.CommandSayEvent;
+import net.deechael.dynamichat.event.bukkit.UserChatEvent;
+import net.deechael.dynamichat.event.bukkit.WhisperEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

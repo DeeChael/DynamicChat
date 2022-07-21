@@ -1,6 +1,6 @@
 package net.deechael.dynamichat.entity;
 
-import net.deechael.dynamichat.object.Punishment;
+import net.deechael.dynamichat.api.Punishment;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

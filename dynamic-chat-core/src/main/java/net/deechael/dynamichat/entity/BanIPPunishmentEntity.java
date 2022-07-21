@@ -1,6 +1,6 @@
 package net.deechael.dynamichat.entity;
 
-import net.deechael.dynamichat.object.BanIPPunishment;
+import net.deechael.dynamichat.api.BanIPPunishment;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

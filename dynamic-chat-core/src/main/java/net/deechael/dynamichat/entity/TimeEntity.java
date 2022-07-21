@@ -1,7 +1,7 @@
 package net.deechael.dynamichat.entity;
 
 import net.deechael.dynamichat.exception.TimeParseException;
-import net.deechael.dynamichat.object.Time;
+import net.deechael.dynamichat.api.Time;
 
 import java.util.Date;
 import java.util.regex.Matcher;

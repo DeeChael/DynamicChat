@@ -2,7 +2,7 @@ package net.deechael.dynamichat.entity;
 
 import net.deechael.dynamichat.DyChatPlugin;
 import net.deechael.dynamichat.api.*;
-import net.deechael.dynamichat.object.Time;
+import net.deechael.dynamichat.api.Time;
 import net.deechael.dynamichat.sql.Sqlite;
 import net.deechael.dynamichat.util.ConfigUtils;
 import net.deechael.dynamichat.util.StringUtils;

@@ -1,9 +1,14 @@
-package net.deechael.dynamichat.object;
+package net.deechael.dynamichat.api;
 
 import java.util.Date;
 
 /**
- * Example: 1y2mo3wk4d5h6min7s
+ * y: Year
+ * mo: Month
+ * wk: Week
+ * d: Day
+ * min: Minute
+ * s: Second
  */
 public interface Time {
 

@@ -3,7 +3,7 @@ package net.deechael.dynamichat.util;
 import net.deechael.dynamichat.DyChatPlugin;
 import net.deechael.dynamichat.entity.BanPunishmentEntity;
 import net.deechael.dynamichat.entity.MutePunishmentEntity;
-import net.deechael.dynamichat.object.Punishment;
+import net.deechael.dynamichat.api.Punishment;
 import net.deechael.useless.objs.FoObj;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;

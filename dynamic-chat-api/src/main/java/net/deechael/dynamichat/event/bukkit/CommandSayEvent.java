@@ -1,4 +1,4 @@
-package net.deechael.dynamichat.event;
+package net.deechael.dynamichat.event.bukkit;
 
 import net.deechael.dynamichat.api.Channel;
 import net.deechael.dynamichat.api.BukkitUser;

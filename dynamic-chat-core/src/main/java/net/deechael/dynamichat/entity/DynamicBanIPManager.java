@@ -4,12 +4,11 @@ import net.deechael.dynamichat.DyChatPlugin;
 import net.deechael.dynamichat.api.BanIPManager;
 import net.deechael.dynamichat.api.PlayerBukkitUser;
 import net.deechael.dynamichat.api.PlayerUser;
-import net.deechael.dynamichat.object.BanIPPunishment;
+import net.deechael.dynamichat.api.BanIPPunishment;
 import net.deechael.dynamichat.sql.Sqlite;
 import net.deechael.dynamichat.util.StringUtils;
 import net.deechael.useless.objs.DuObj;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
@@ -347,43 +346,6 @@ public final class DynamicBanIPManager implements BanIPManager {
             throw new RuntimeException(e);
         }
         return new BanIPPunishmentEntity(banId, host, user.getName(), operator, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(start), end != null ? new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(end) : "null", false, reason);
-    }
-
-    @Override
-    public BanIPPunishment banIPWithPlayer(String playerName, String operator, String reason, Date start, Date end) {
-        PreparedStatement preparedStatement = this.sqlite.preparedStatement("INSERT INTO `punishments` (`ban_id`, `host`, `withUser`, `operator`, `start_date`, `end_date`, `reason`, `unbanned`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
-        String banId = StringUtils.random64();
-        while (get(banId) != null) {
-            banId = StringUtils.random64();
-        }
-        String host = "null";
-        String[] sp = host.split("\\.");
-        if (sp.length != 4)
-            throw new RuntimeException("Invalided host");
-        long[] spInt = new long[4];
-        for (int i = 0; i < 4; i++) {
-            try {
-                spInt[i] = Long.parseLong(sp[i]);
-            } catch (NumberFormatException e) {
-                throw new RuntimeException("Host should be made of numbers!", e);
-            }
-        }
-        try {
-            preparedStatement.setString(1, banId);
-            preparedStatement.setLong(2, (spInt[0] << 24) | (spInt[1] << 16) | (spInt[2] << 8) | spInt[3]);
-            preparedStatement.setString(3, playerName.toLowerCase());
-            preparedStatement.setString(4, operator);
-            preparedStatement.setString(5, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(start));
-            preparedStatement.setString(6, end != null ? new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(end) : "null");
-            preparedStatement.setString(7, reason);
-            preparedStatement.setBoolean(8, false);
-
-            preparedStatement.executeUpdate();
-            preparedStatement.close();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return new BanIPPunishmentEntity(banId, host, playerName, operator, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(start), end != null ? new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(end) : "null", false, reason);
     }
 
     @Override

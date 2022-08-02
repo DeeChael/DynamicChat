@@ -8,7 +8,6 @@ public class Sqlite {
     private final String url;
 
     private Connection connection;
-    private Statement statement;
 
     private boolean closed = false;
 
@@ -17,7 +16,6 @@ public class Sqlite {
         try {
             Class.forName("org.sqlite.JDBC");
             this.connection = DriverManager.getConnection(url);
-            this.statement = connection.createStatement();
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -25,7 +23,10 @@ public class Sqlite {
 
     public ResultSet executeQuery(String command) {
         try {
-            return this.statement.executeQuery(command);
+            PreparedStatement statement = this.connection.prepareStatement(command);
+            ResultSet resultSet = statement.executeQuery();
+            statement.close();
+            return resultSet;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -33,7 +34,9 @@ public class Sqlite {
 
     public void executeUpdate(String command) {
         try {
-            this.statement.executeUpdate(command);
+            PreparedStatement statement = this.connection.prepareStatement(command);
+            statement.executeUpdate();
+            statement.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -51,7 +54,6 @@ public class Sqlite {
         if (!closed) {
             try {
                 this.connection.close();
-                this.statement.close();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -62,6 +64,5 @@ public class Sqlite {
     public boolean isClosed() {
         return closed;
     }
-
 
 }

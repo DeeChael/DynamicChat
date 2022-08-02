@@ -96,6 +96,8 @@ public final class DynamicBanIPManager implements BanIPManager {
                 boolean unbanned = resultSet.getBoolean("unbanned");
                 punishments.add(new BanIPPunishmentEntity(resultSet.getString("ban_id"), host, withUser, operator, start_date, end_date, unbanned, reason));
             }
+            resultSet.close();
+            statement.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -119,6 +121,8 @@ public final class DynamicBanIPManager implements BanIPManager {
                 boolean unbanned = resultSet.getBoolean("unbanned");
                 punishments.add(new BanIPPunishmentEntity(resultSet.getString("ban_id"), host, playerName, operator, start_date, end_date, unbanned, reason));
             }
+            resultSet.close();
+            statement.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -151,6 +155,8 @@ public final class DynamicBanIPManager implements BanIPManager {
                         unbanIPWithId(resultSet.getString("ban_id"));
                 }
             }
+            resultSet.close();
+            statement.close();
         } catch (SQLException | ParseException e) {
             throw new RuntimeException(e);
         }
@@ -184,6 +190,8 @@ public final class DynamicBanIPManager implements BanIPManager {
                         unbanIPWithId(resultSet.getString("ban_id"));
                 }
             }
+            resultSet.close();
+            statement.close();
         } catch (SQLException | ParseException e) {
             throw new RuntimeException(e);
         }
@@ -210,6 +218,8 @@ public final class DynamicBanIPManager implements BanIPManager {
                         unbanIPWithId(resultSet.getString("ban_id"));
                 }
             }
+            resultSet.close();
+            statement.close();
         } catch (SQLException | ParseException e) {
             throw new RuntimeException(e);
         }
@@ -241,6 +251,8 @@ public final class DynamicBanIPManager implements BanIPManager {
                         unbanIPWithId(resultSet.getString("ban_id"));
                 }
             }
+            resultSet.close();
+            statement.close();
         } catch (SQLException | ParseException e) {
             throw new RuntimeException(e);
         }
@@ -264,6 +276,8 @@ public final class DynamicBanIPManager implements BanIPManager {
                 boolean unbanned = resultSet.getBoolean("unbanned");
                 return new BanIPPunishmentEntity(banId, host, withUser, operator, start_date, end_date, unbanned, reason);
             }
+            resultSet.close();
+            statement.close();
         } catch (SQLException e) {
             return null;
         }
@@ -355,6 +369,7 @@ public final class DynamicBanIPManager implements BanIPManager {
             statement.setBoolean(1, true);
             statement.setString(2, id);
             statement.executeUpdate();
+            statement.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -367,6 +382,7 @@ public final class DynamicBanIPManager implements BanIPManager {
             statement.setBoolean(1, true);
             statement.setString(2, host);
             statement.executeUpdate();
+            statement.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -384,6 +400,7 @@ public final class DynamicBanIPManager implements BanIPManager {
             statement.setBoolean(1, true);
             statement.setString(2, Bukkit.getOfflinePlayer(uuid).getName().toLowerCase());
             statement.executeUpdate();
+            statement.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -396,6 +413,7 @@ public final class DynamicBanIPManager implements BanIPManager {
             statement.setBoolean(1, true);
             statement.setString(2, Bukkit.getOfflinePlayer(playerName).getName().toLowerCase());
             statement.executeUpdate();
+            statement.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

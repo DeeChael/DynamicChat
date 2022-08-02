@@ -38,6 +38,8 @@ public final class ConfigUtils {
         setDefault(configuration, "whisper-sound", false);
         setDefault(configuration, "channel.enable", false);
         setDefault(configuration, "channel.global-name", "Global");
+        setDefault(configuration, "fold-message.enable", false);
+        setDefault(configuration, "fold-message.format", " - %message%");
         setDefault(configuration, "chat-color.enable", false);
         setDefault(configuration, "chat-color.gradient", false);
         setDefault(configuration, "chat-color.changeable", false);
@@ -184,6 +186,17 @@ public final class ConfigUtils {
         check();
         return configuration.getBoolean("chat-color.gradient");
     }
+
+    public static boolean foldMessageEnable() {
+        check();
+        return configuration.getBoolean("fold-message.enable");
+    }
+
+    public static String foldMessageFormat() {
+        check();
+        return configuration.getString("fold-message.format");
+    }
+
 
     public static boolean mentionPlayer() {
         check();

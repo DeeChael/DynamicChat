@@ -48,7 +48,7 @@ public class DynamicChatListener implements Listener {
         BukkitChatManager.getManager().getBukkitPlayerUser(event.getPlayer()).chat(event.getMessage());
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onJoin(PlayerJoinEvent event) {
         FoObj<Boolean, String, Date, String> obj = MuteNBanManager.isNowBanned(event.getPlayer());
         if (obj.getFirst()) {

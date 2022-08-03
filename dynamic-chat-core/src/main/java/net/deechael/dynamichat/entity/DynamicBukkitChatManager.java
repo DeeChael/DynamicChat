@@ -1,5 +1,6 @@
 package net.deechael.dynamichat.entity;
 
+import com.google.gson.Gson;
 import net.deechael.dynamichat.DyChatPlugin;
 import net.deechael.dynamichat.api.*;
 import net.deechael.dynamichat.api.Time;
@@ -68,6 +69,22 @@ public class DynamicBukkitChatManager extends BukkitChatManager {
 
     public static Message getChatCache(String key) {
         return getChatManager().chatCaches.get(key);
+    }
+
+    public static boolean isLastSender(String name) {
+        String last = getLastSender();
+        if (last == null)
+            return false;
+        if (!last.equalsIgnoreCase(name))
+            return false;
+        MuteMessage message = getMessage(messages() - 1);
+        return new Date().getTime() - message.getSendTime().getTime() <= 60 * 1000L;
+    }
+
+    public static String getLastSender() {
+        if (getChatManager().records.size() == 0)
+            return null;
+        return getChatManager().records.get(getChatManager().records.size() - 1).getValue().getSenderName();
     }
 
     public static void reload() {

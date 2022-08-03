@@ -56,6 +56,7 @@ public final class PlayerUtils {
         FileConfiguration configuration = YamlConfiguration.loadConfiguration(playerFile);
         StringBuilder colorString = new StringBuilder();
         for (int i = 0; i < colors.size(); i++) {
+            colorString.append(colors.get(i));
             if (i < colors.size() - 1) {
                 colorString.append(",");
             }

@@ -174,7 +174,7 @@ public final class ConfigUtils {
 
     public static boolean isProxyMode() {
         check();
-        return configuration.getBoolean("proxy-mode");
+        return configuration.getBoolean("proxy-mode", false);
     }
 
     public static boolean chatColorEnable() {

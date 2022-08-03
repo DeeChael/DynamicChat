@@ -59,7 +59,7 @@ public final class DyChatReportExtensionPlugin extends JavaPlugin {
                         return;
                     }
                 }
-                if (message.getSender().getSender() == player) {
+                if (((BukkitUser) message.getSender()).getSender() == player) {
                     Lang.send(player, "message.notself");
                     return;
                 }

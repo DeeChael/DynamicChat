@@ -1,7 +1,38 @@
 # DynamicChat
  A very useful chat plugin for Minecraft Bukkit you must have!
 
+**!ATTENTION!: This plugin is only available for Minecraft 1.19+**
+
+## Core
+### DynamicChat Bukkit
+Core plugin, should be installed to the server you want to use DynamicChat
+### DynamicChat Bungee (WIP) & DynamicChat Velocity (WIP)
+Proxy plugin, if your servers are using proxy to connect multiple servers, you should install one of them according to your proxy server and set the "proxy-mode" to "true" in the config.yml file
+
+## Official Extensions
+1. Blacklist
+2. Report
+3. Mute And Ban
+
+## Future Plan
+1. Official Extension: Friend
+2. Official Extension: Party
+3. Official Extension: Reply
+4. Proxy plugin
+
 ## How to Use
+
+### For server
+This plugin now is NOT AVAILABLE for the server using proxy like BungeeCord or Velocity \
+They will be supported in the future
+
+1. Download the plugin
+2. Download DCG-loader (Dependency): https://www.spigotmc.org/resources/dynamic-class-generator.101584/
+3. Download PlaceholderAPI (Dependency): https://www.spigotmc.org/resources/placeholderapi.6245/ (Will be soft-dependency in the future)
+4. Move three plugins to your server plugins directory
+5. Start the server
+6. Install player extension to PlaceholderAPI with "/papi ecloud download player" command
+7. Reload PlaceholderAPI with "/papi reload" command
 
 ### For developers
 #### 1.Add dynamichat-api to your project
@@ -41,8 +72,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
 
-// Get access to the API with ChatManager
-// Now the API is only available on Bukkit, but there will be Bungee and Velocity in the future
 public class ExamplePlugin extends JavaPlugin implements Listener {
     
     @EventHandler
@@ -68,6 +97,8 @@ public class ExamplePlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
+        // Get access to the API with ChatManager
+        // Now the API is only available on Bukkit, but there will be Bungee and Velocity in the future
         BukkitChatManager chatManager = BukkitChatManager.getManager();
         List<Channel> channels = chatManager.getChannels(); // Get the channels that are registered in the config file
         Channel chn = chatManager.getChannel("test"); // Get the channel with its name, null if not exists
@@ -121,3 +152,9 @@ public class ExamplePlugin extends JavaPlugin implements Listener {
 
 }
 ```
+
+#### 3.PlaceholderAPI placeholders
+| Name                                       | Placeholder                        |
+|--------------------------------------------|------------------------------------|
+| The name of player current channel         | %dynamichat_currentChannel%        |
+| The display name of player current channel | %dynamichat_currentChannelDisplay% |

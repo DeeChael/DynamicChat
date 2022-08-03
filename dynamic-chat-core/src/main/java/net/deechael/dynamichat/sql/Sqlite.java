@@ -25,7 +25,7 @@ public class Sqlite {
         try {
             PreparedStatement statement = this.connection.prepareStatement(command);
             ResultSet resultSet = statement.executeQuery();
-            statement.close();
+            //statement.close();
             return resultSet;
         } catch (SQLException e) {
             throw new RuntimeException(e);

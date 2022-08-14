@@ -526,7 +526,8 @@ public class DyChatPlugin extends JavaPlugin {
                                 ComponentBuilder componentBuilder = new ComponentBuilder();
                                 Map<Integer, ? extends MessageButton> buttons = BukkitChatManager.getManager().getButtons();
                                 int maxIndex = BukkitChatManager.getManager().getButtonMaxIndex();
-                                if (maxIndex != -1) {
+                                int minIndex = BukkitChatManager.getManager().getButtonMinIndex();
+                                if (maxIndex >= minIndex) {
                                     for (int i = 0; i < maxIndex + 1; i++) {
                                         if (!buttons.containsKey(i))
                                             continue;

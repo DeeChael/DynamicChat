@@ -70,6 +70,13 @@ public interface ChatManager {
     int getButtonMaxIndex();
 
     /**
+     * Because the index of buttons can be customized, this will return the min index of the registered buttons
+     *
+     * @return the min index
+     */
+    int getButtonMinIndex();
+
+    /**
      * To check whether language should follow the client
      *
      * @return status

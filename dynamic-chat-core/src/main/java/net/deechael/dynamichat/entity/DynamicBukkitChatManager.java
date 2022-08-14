@@ -4,6 +4,7 @@ import net.deechael.dynamichat.DyChatPlugin;
 import net.deechael.dynamichat.api.*;
 import net.deechael.dynamichat.api.Time;
 import net.deechael.dynamichat.sql.Sqlite;
+import net.deechael.dynamichat.util.CollectionUtils;
 import net.deechael.dynamichat.util.ConfigUtils;
 import net.deechael.dynamichat.util.StringUtils;
 import net.deechael.useless.objs.DuObj;
@@ -288,9 +289,20 @@ public class DynamicBukkitChatManager extends BukkitChatManager {
 
     @Override
     public int getButtonMaxIndex() {
-        int index = -1;
+        int index = CollectionUtils.randomElement(buttons.keySet());
         for (int i : buttons.keySet()) {
             if (i > index) {
+                index = i;
+            }
+        }
+        return index;
+    }
+
+    @Override
+    public int getButtonMinIndex() {
+        int index = CollectionUtils.randomElement(buttons.keySet());
+        for (int i : buttons.keySet()) {
+            if (i < index) {
                 index = i;
             }
         }

@@ -40,6 +40,8 @@ public final class ConfigUtils {
         setDefault(configuration, "channel.global-name", "Global");
         setDefault(configuration, "fold-message.enable", false);
         setDefault(configuration, "fold-message.format", " - %message%");
+        setDefault(configuration, "spam.is-allow", true);
+        setDefault(configuration, "spam.max-limit", 3);
         setDefault(configuration, "chat-color.enable", false);
         setDefault(configuration, "chat-color.gradient", false);
         setDefault(configuration, "chat-color.changeable", false);
@@ -88,6 +90,7 @@ public final class ConfigUtils {
         setDefault(languageConfiguration, "message.filter-cancel-edit-button", "&e&l[Click to edit]");
         setDefault(languageConfiguration, "message.filter-cancel-edit-button-hover", "&b&lClick here to edit");
         setDefault(languageConfiguration, "message.hover", "&b&lClick here to show options");
+        setDefault(languageConfiguration, "message.spam", "&c&l(!) &r&cDo not spam! You have reached the limit of {0}!");
         setDefault(languageConfiguration, "message.button.copy.display", "&a&l[&r&aCopy Message&a&l]");
         setDefault(languageConfiguration, "message.button.copy.hover", "&b&lClick here to copy the message");
         //setDefault(languageConfiguration, "message.button.copy.message", "&a&l(!) &r&cYou copied the message successfully!");
@@ -175,6 +178,17 @@ public final class ConfigUtils {
     public static boolean isProxyMode() {
         check();
         return configuration.getBoolean("proxy-mode", false);
+    }
+
+    public static boolean allowSpam() {
+        check();
+        return configuration.getBoolean("spam.is-allow", false);
+    }
+
+    public static int maxSpamLimit() {
+        check();
+        int times = configuration.getInt("spam.max-limit", 3);
+        return Math.max(times, 1);
     }
 
     public static boolean chatColorEnable() {

@@ -10,6 +10,7 @@ import net.deechael.dynamichat.event.bukkit.WhisperEvent;
 import net.deechael.dynamichat.feature.Filter;
 import net.deechael.dynamichat.placeholder.DynamicChatPlaceholder;
 import net.deechael.dynamichat.util.*;
+import net.deechael.useless.objs.DuObj;
 import net.deechael.useless.objs.TriObj;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -144,6 +145,17 @@ public abstract class BukkitUserEntity implements BukkitUser {
         }
         String format = event.getFormat();
         message = event.getMessage();
+        if (!ConfigUtils.allowSpam()) {
+            DuObj<String, Integer> lastMessageWithTimes = DynamicBukkitChatManager.lastMessageWithRepeatedTimes(this);
+            if (lastMessageWithTimes != null) {
+                if (message.equals(lastMessageWithTimes.getFirst())) {
+                    if (lastMessageWithTimes.getSecond() + 1 >= ConfigUtils.maxSpamLimit()) {
+                        Lang.send(this.getSender(), "message.spam", ConfigUtils.maxSpamLimit());
+                        return;
+                    }
+                }
+            }
+        }
         showers.clear();
         showers.addAll(event.getRecipients().stream().map(user -> ((PlayerBukkitUserEntity) user).getSender()).toList());
         String msgId = DynamicBukkitChatManager.newChatCache(this, message);

@@ -1,12 +1,12 @@
 package net.deechael.dynamichat.entity;
 
-import com.google.gson.Gson;
 import net.deechael.dynamichat.DyChatPlugin;
 import net.deechael.dynamichat.api.*;
 import net.deechael.dynamichat.api.Time;
 import net.deechael.dynamichat.sql.Sqlite;
 import net.deechael.dynamichat.util.ConfigUtils;
 import net.deechael.dynamichat.util.StringUtils;
+import net.deechael.useless.objs.DuObj;
 import net.deechael.useless.objs.FiObj;
 import net.deechael.useless.objs.TriObj;
 import org.bukkit.Bukkit;
@@ -69,6 +69,37 @@ public class DynamicBukkitChatManager extends BukkitChatManager {
 
     public static Message getChatCache(String key) {
         return getChatManager().chatCaches.get(key);
+    }
+
+    public static List<MuteMessage> getBySender(User user) {
+        return new ArrayList<>(getChatManager().records).stream().filter(entry -> entry.getValue().getSenderName().equalsIgnoreCase(user.getName())).map(Map.Entry::getValue).toList();
+    }
+
+    public static String getLastMessage(User user) {
+        List<MuteMessage> messages = getBySender(user);
+        MuteMessage message = messages.get(messages.size() - 1);
+        if (System.currentTimeMillis() - message.getSendTime().getTime() > 1000 * 60)
+            return null;
+        return message.getContent();
+    }
+
+    public static DuObj<String, Integer> lastMessageWithRepeatedTimes(User user) {
+        List<MuteMessage> messages = getBySender(user);
+        MuteMessage message = messages.get(messages.size() - 1);
+        if (System.currentTimeMillis() - message.getSendTime().getTime() > 1000 * 60)
+            return null;
+        String content = message.getContent();
+        int times = 1;
+        for (int i = messages.size() - 2; i >= 0; i--) {
+            MuteMessage msg = messages.get(i);
+            if (!msg.getContent().equals(content))
+                continue;
+            if (message.getSendTime().getTime() - msg.getSendTime().getTime() > 1000 * 60)
+                continue;
+            times++;
+            message = msg;
+        }
+        return new DuObj<>(content, times);
     }
 
     public static boolean isLastSender(String name) {

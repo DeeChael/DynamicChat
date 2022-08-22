@@ -189,6 +189,7 @@ public final class ConfigUtils {
         check();
         int times = configuration.getInt("spam.max-limit", 3);
         return Math.max(times, 1);
+
     }
 
     public static boolean chatColorEnable() {

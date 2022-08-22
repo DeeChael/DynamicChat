@@ -17,6 +17,9 @@ repositories {
     maven {
         url = "https://repo.extendedclip.com/content/repositories/placeholderapi/"
     }
+    maven {
+        url = "https://repo.dmulloy2.net/repository/public/"
+    }
 }
 
 dependencies {
@@ -29,4 +32,9 @@ dependencies {
     implementation "net.deechael:chschar:1.00.0"
     compileOnly "net.deechael:ref:1.01.0"
     compileOnly 'me.clip:placeholderapi:2.11.2'
+    compileOnly 'com.comphenix.protocol:ProtocolLib:4.8.0'
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+    testCompileOnly 'org.projectlombok:lombok:1.18.24'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
 }

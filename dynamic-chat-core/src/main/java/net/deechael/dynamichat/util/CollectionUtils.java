@@ -12,6 +12,14 @@ public final class CollectionUtils {
         return list.get(new Random().nextInt(list.size()));
     }
 
+    public static byte[] classByteToPrimByte(Byte[] bytes) {
+        byte[] primBytes = new byte[bytes.length];
+        for (int i = 0; i < bytes.length; i++) {
+            primBytes[i] = bytes[i];
+        }
+        return primBytes;
+    }
+
     private CollectionUtils() {}
 
 }

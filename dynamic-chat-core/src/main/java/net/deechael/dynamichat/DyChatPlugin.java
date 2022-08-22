@@ -1,5 +1,7 @@
 package net.deechael.dynamichat;
 
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
 import net.deechael.dynamichat.api.*;
 import net.deechael.dynamichat.command.EzArgument;
 import net.deechael.dynamichat.command.EzCommand;
@@ -16,8 +18,11 @@ import net.deechael.dynamichat.gui.Image;
 import net.deechael.dynamichat.api.BanIPPunishment;
 import net.deechael.dynamichat.api.Time;
 import net.deechael.dynamichat.placeholder.DynamicChatPlaceholder;
+import net.deechael.dynamichat.proxy.packets.PacketRequestSettings;
 import net.deechael.dynamichat.temp.DynamicChatListener;
 import net.deechael.dynamichat.temp.NMSCommandKiller;
+import net.deechael.dynamichat.temp.ProxyConnection;
+import net.deechael.dynamichat.temp.RecallSolver;
 import net.deechael.dynamichat.util.*;
 import net.deechael.useless.objs.FoObj;
 import net.md_5.bungee.api.ChatColor;
@@ -63,6 +68,13 @@ public class DyChatPlugin extends JavaPlugin {
         new DynamicChatPlaceholder().register();
         Bukkit.getPluginManager().registerEvents(EzCommandManager.INSTANCE, this);
         Bukkit.getPluginManager().registerEvents(new DynamicChatListener(), this);
+        ProtocolManager manager = ProtocolLibrary.getProtocolManager();
+        manager.addPacketListener(new RecallSolver());
+        if (ConfigUtils.isProxyMode()) {
+            this.getServer().getMessenger().registerOutgoingPluginChannel(this, "dynamichat");
+            this.getServer().getMessenger().registerIncomingPluginChannel(this, "dynamichat", new ProxyConnection());
+        }
+        ProxyConnection.sendPacket(new PacketRequestSettings());
         BukkitChatManager.getManager().registerButton(0, new CopyMessageButton() {
             @Override
             public String value(User clicker, Message message) {
@@ -1302,6 +1314,8 @@ public class DyChatPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        this.getServer().getMessenger().unregisterOutgoingPluginChannel(this);
+        this.getServer().getMessenger().unregisterIncomingPluginChannel(this);
     }
 
 }
